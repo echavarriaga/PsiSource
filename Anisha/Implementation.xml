@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelImplementationPsi>
+ 
+  
+<Function id="examples" arguments="name"><![CDATA[
+  switch(name){
+    case "runs":
+      context.features = { p1: { point: "50,50", color: "black" }, p2: { point: "250,200", color: "green" } };
+      PsiData.document.register("characters", "xml/characters.xml");
+      Shapes.run("sample", { url: "code/characters.xml" }, context);
+      Anime.run("runs", { url: "code/runs.xml" }, context);
+      break;
+    case "basic":
+      Shapes.run("basic", { url: "code/basic.xml" }, context);
+      break;
+    case "ms":
+      Shapes.run("p1", { url: "code/p1.xml" }, context);
+      Shapes.run("p2", { url: "code/p2.xml" }, context);
+      Shapes.run("p3", { url: "code/p3.xml" }, context);
+      Shapes.run("p4", { url: "code/p4.xml" }, context);
+      break;
+    case "mm":
+      Shapes.run("p1", { url: "code/p1.xml" }, context);
+      Shapes.run("p2", { url: "code/p2.xml" }, context);
+      Shapes.run("p3", { url: "code/p3.xml" }, context);
+      Shapes.run("p4", { url: "code/p4.xml" }, context);
+      Anime.run("a1", { url: "code/a1.xml" }, context);
+      Anime.run("a2", { url: "code/a2.xml" }, context);
+      Anime.run("a3", { url: "code/a3.xml" }, context);
+      Anime.run("a4", { url: "code/a4.xml" }, context);
+      break;
+  }
+]]></Function>
+  
+  
+<Class id="base" arguments="">
+  <Property name="group" default="null"/>
+  
+  <Event name="onInit" arguments="" trycatch="false"><![CDATA[
+    this.paint();
+    PsiData.shapes.register(this.id(), this);
+  ]]></Event>
+  
+  <Method name="getOptions" arguments="" trycatch="false"><![CDATA[
+    return this.hasAttr("style")
+         ? {style: this.attr("style")}
+         : {fill: '#f0f0f0', stroke: 'gray', strokeWidth: 3};
+  ]]></Method>
+  
+  <Method name="getOptionsLabel" arguments="" trycatch="false"><![CDATA[
+    return this.hasAttr("style-label")
+         ? {style: this.attr("style-label")}
+         : {style: 'fill: white; font-size:1em; font-weight:bold; vertical-align: middle; text-anchor:middle;'};
+  ]]></Method>
+  
+  <Method name="getPoint" arguments="point" trycatch="false"><![CDATA[
+    var s = point.split(","); 
+    return {x: parseFloat(s[0]), y: parseFloat(s[1])};
+  ]]></Method>
+  
+  <Method name="move" arguments="point" trycatch="false"><![CDATA[
+    this.attr("center", point.x+","+point.y);
+    this.context.svg.change(this.group, {transform: "translate("+this.attr("center")+")"});
+  ]]></Method>
+  
+  <Method name="paint" arguments="" trycatch="false"></Method>
+</Class>
+
+
+<Class id="circle" arguments="">
+  <Validator element-key="circle" id="*identifier" center="*text" radius="=10|integer" style="text"/>
+  
+  <Method name="paint" arguments="" trycatch="false"><![CDATA[
+    var svg = this.context.svg;
+    this.group = svg.group(this.id(), {transform: "translate("+this.attr("center")+")"});
+    svg.circle(this.group, 0, 0, this.attr("radius"),  this.getOptions());
+    svg.text(this.group, 0, 5, this.attr("label"), this.getOptionsLabel());
+  ]]></Method>
+</Class>
+
+
+<Class id="rectangle" arguments="">
+  <Validator element-key="rectangle" id="*identifier" center="*text" width="=10|integer" height="=10|integer" style="text"/>
+  
+  <Method name="paint" arguments="" trycatch="false"><![CDATA[
+    var svg = this.context.svg;
+    this.group = svg.group(this.id(), {transform: "translate("+this.attr("center")+")"});
+    var center = this.getPoint(this.attr("center")),
+        width = this.attr("width"), height = this.attr("height");
+    svg.rect(this.group, -width/2, -height/2, width, height,  this.getOptions());
+    svg.text(this.group, 0, 5, this.attr("label"), this.getOptionsLabel());
+  ]]></Method>
+</Class>  
+  
+<Class id="shapes" arguments="">
+  <Validator element-key="shapes" name="*text"/>
+  <Property name="circles" default="{}"/>
+  <Property name="rectangles" default="{}"/>
+  
+  <Event name="onInit" arguments="" trycatch="false"><![CDATA[
+    //Iniciar Interfaz de Usuario
+  ]]></Event>
+</Class>
+
+  
+
+<Parser id="shapespsi_parser" arguments="">
+  <Event name="onFinish" arguments="" trycatch="false"><![CDATA[
+    this.program.state = PsiXML.ProgramState.STOP;
+  ]]></Event>
+</Parser>
+
+
+<ComponentPsi id="shapes_psi">
+  
+  <Initialize name="InitShapesPsi"><![CDATA[
+    PsiData.register("shapes");
+  ]]></Initialize>
+</ComponentPsi>
+  
+  
+
+<Class id="move" arguments="">
+  <Validator element-key="move" key="*identifier" path="*text" steps="=50|integer" seconds="=10|integer" wait="=0|integer" repeat="=no|select(yes,no)"/>
+  <Property name="shape" default="null"/>
+  <Property name="points" default="new Array()"/>
+  <Property name="current" default="0"/>
+  <Property name="lapso" default="0"/>
+  
+  <Event name="onInit" arguments="" trycatch="false"><![CDATA[
+    PsiData.moves.register(this.uid, this);
+    this.shape = PsiData.shapes[this.attr("key")];
+    if (this.shape!=null){
+      //Initialize movement points
+      var d = "M"+this.shape.attr("center")+this.attr("path"),
+          svg = this.context.svg,
+          options = {fill: 'none', stroke: '#F0F0F0', strokeWidth: 2},
+          path = svg.path(svg.createPath(), options);
+      svg.change(path, {d: d});
+
+      var total = path.getTotalLength(), steps = this.attr("steps");
+      this.lapso = Math.round(1000*this.attr("seconds")/steps);
+      for(var i=0; i<=steps; i++){
+        var point = path.getPointAtLength(i*total/steps);
+        this.points.push(point);
+      }
+      svg.remove(path);
+      
+      //Perform movement
+      this.buildTimeout( 1000*this.attr("wait") );
+    }
+      
+  ]]></Event>
+  
+  <Method name="buildTimeout" arguments="wait" trycatch="false"><![CDATA[
+    var timeout = "setTimeout(function(){ PsiData.moves['"+this.uid+"'].run(); }, "+wait+");";
+    eval(timeout)  
+  ]]></Method>
+  
+  <Method name="run" arguments="" trycatch="false"><![CDATA[
+    var point = this.points[this.current++];
+    this.shape.move(point);
+    //Determine next step
+    if (this.current<this.points.length)
+      this.buildTimeout( this.lapso );
+    else {
+      this.current = 0;
+      if (this.attr("repeat")=="yes")
+        this.buildTimeout( this.lapso );
+    }   
+  ]]></Method>
+</Class>  
+  
+<Class id="animates" arguments="">
+  <Validator element-key="animates" name="*text"/>
+  <Property name="moves" default="{}"/>
+  
+  <Event name="onInit" arguments="" trycatch="false"><![CDATA[
+    //Iniciar Interfaz de Usuario
+  ]]></Event>
+</Class>
+
+  
+
+<Parser id="anime_parser" arguments="">
+  <Event name="onFinish" arguments="" trycatch="false"><![CDATA[
+    this.program.state = PsiXML.ProgramState.STOP;
+  ]]></Event>
+</Parser>
+
+
+<ComponentPsi id="anima_psi">
+  
+  <Initialize name="InitAnimaPsi"><![CDATA[
+    PsiData.register("moves");
+  ]]></Initialize>
+</ComponentPsi>
+
+
+</ModelImplementationPsi>

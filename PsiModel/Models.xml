@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelImplementationPsi>
+
+  
+<Class id="model_psi" arguments="">
+  <Validator element-key="model_psi" name="*text" acronym="*identifier" include-header="=yes|select(yes,no)" version="" description=""/>
+  
+  <Property name="implementations" default="{}"/>		
+  <Property name="vars" default="{}"/>
+  <Property name="enums" default="{}"/>
+  <Property name="scripts" default="{}"/>
+  <Property name="functions" default="{}"/>
+  <Property name="objects" default="{}"/>
+  <Property name="classes" default="{}"/>
+  <Property name="widgets" default="{}"/>
+  <Property name="components" default="{}"/>
+  <Property name="components_psi" default="{}"/>
+      
+  <Event name="onInit" arguments=""><![CDATA[
+    //Adicionar atributos de configuración
+    this.includeHeader = this.attr("include-header")=="yes";
+    
+    //Registrar todos los templates
+    PsiData.document.register("models-psi-templates", this.context.templates);
+    this.templatesDocument = PsiData.document.get("models-psi-templates");
+    this.templates = new Templates(this);
+  ]]></Event>
+    
+  <Method name="acronym" arguments="" trycatch="false"><![CDATA[
+    return this.attr("acronym") ? this.attr("acronym") : "DefaultPsi";
+  ]]></Method>
+  
+  <Method name="getData" arguments=""><![CDATA[
+    var content = "";
+    for(var uid in this.children){
+      var element = this.children[uid];
+      if (element.tag!="Implementation") {
+        if (this.includeHeader)
+          content += this.templates.apply("Header", element.getInfo());
+        content += element.toJavaScript();  
+      }
+    }
+    return $.extend({
+      version: this.attr("version"),
+      content: content,
+      debug: this.attr("debug")=="true" ? "true" : "false"
+    }, this.getInfo());
+  ]]></Method>
+  
+  <Method name="toJavaScript" arguments=""><![CDATA[
+    return this.templates.apply(this.tag, this.getData());
+  ]]></Method>
+</Class>
+
+
+<Parser id="model_psi_parser" arguments="">
+  <Event name="onInit" trycatch="false"><![CDATA[
+    //* Implementation event
+	]]></Event>
+
+  <Event name="onErrorParseElement" arguments="newElement, error" trycatch="false"><![CDATA[
+    //* Implementation event
+    return false;
+  ]]></Event>
+</Parser>
+
+
+<ComponentPsi id="mpsi">
+  <Initialize name="InitMPsi" trycatch="false"><![CDATA[
+  ]]></Initialize>
+</ComponentPsi>
+
+</ModelImplementationPsi>

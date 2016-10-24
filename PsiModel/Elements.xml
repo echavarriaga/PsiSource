@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelImplementationPsi>
+
+
+<Class id="var" arguments="">
+  <Validator element-key="var" id="*identifier" name="text" public="=no|select(yes,no)" implementation="*text" description="text"/>
+  
+  <Method name="getData" arguments=""><![CDATA[
+    return $.extend({ 
+      value: this.implementation.text() 
+    }, this.getInfo());
+  ]]></Method>
+</Class> 
+
+
+
+<Class id="enum" arguments="">
+  <Validator element-key="enum" id="*identifier" implementation="*text" name="text" public="=no|select(yes,no)"/>
+  	
+  <Method name="getData" arguments=""><![CDATA[
+    var members = "", 
+        last =$(this.implementation._ref).children().last().attr("name");
+    for(var id in this.implementation.members){
+      var member = this.implementation.members[id],
+          data = {
+            name: member.name(),
+            value: member.value(),
+            separator: member.name()!= last ? "," : "" 
+          };
+      members += this.templates.apply("Member", data);
+    };
+    return $.extend({
+      members: members
+    }, this.getInfo());
+  ]]></Method>
+</Class> 
+
+
+
+<Class id="script" arguments="">
+  <Validator element-key="script" id="*identifier" name="text" implementation="*text" description="text"/>
+  
+  <Method name="toJavaScript" arguments=""><![CDATA[
+    return this.implementation.text();
+  ]]></Method>
+</Class> 
+
+
+
+<Class id="function" arguments="">
+  <Validator element-key="function" id="*identifier" name="*identifier" implementation="*text" public="=no|select(yes,no)" description="text"/>
+   
+  <Method name="getData" arguments=""><![CDATA[
+    return $.extend({
+      arguments: this.implementation.attr("arguments"),
+      body: this.implementation.text()
+    }, this.getInfo());
+  ]]></Method>
+</Class> 
+
+
+
+<Class id="object" arguments="">
+  <Validator element-key="object" id="*identifier" name="*identifier" implementation="*text" public="=no|select(yes,no)" description="text"/>
+  <Property name="properties" default="null"/>
+  <Property name="methods" default="null"/>
+		
+  <Method name="getData" arguments=""><![CDATA[
+    if (this.properties && this.methods)
+      this.properties.separatorFinal =  ",";
+    return $.extend({
+      properties: this.properties ? this.properties.toJavaScript() : "",
+      methods: this.methods ? this.methods.toJavaScript() : ""
+    }, this.getInfo());
+  ]]></Method>
+</Class> 
+
+
+
+<Class id="class" arguments="">
+  <Validator element-key="class" id="*identifier" name="*identifier" implementation="*text" public="=no|select(yes,no)" inherits="text" description="text"/>
+  <Property name="properties" default="null"/>
+  <Property name="statics" default="null"/>
+  <Property name="methods" default="null"/>
+  <Property name="events" default="null"/>
+
+  <Method name="getData" arguments=""><![CDATA[
+    var init = "", inherits = "";
+    if (this.methods)
+      this.methods.separatorFinal = ",";
+    if (this.events)
+      this.events.separatorFinal =  ",";
+    if (this.implementation.attr("init")) 
+      init = this.root.templates.apply("ClassInit", {init: this.implementation.attr("init")}); 
+    if (this.hasAttr("inherits"))
+      inherits = this.root.templates.apply("ClassInheritance", {name: this.attr("name"), inherits: this.attr("inherits")});
+    return $.extend({
+      constructor: this.implementation.attr("arguments"), 
+      init: init,
+      inheritance: inherits, 
+      properties: this.properties ? this.properties.toJavaScript() : "",
+      statics: this.statics ? this.statics.toJavaScript() : "",
+      events: this.events ? this.events.toJavaScript() : "",
+      methods: this.methods ? this.methods.toJavaScript() : ""
+    }, this.getInfo());
+  ]]></Method>
+</Class> 
+
+  
+  
+<Class id="widget" arguments="">
+  <Validator element-key="widget" id="*identifier" name="*text" implementation="*text" version="text" inherits="text" description="text"/>
+  <Property name="options" default="null"/>
+  <Property name="properties" default="null"/>
+  <Property name="methods" default="null"/>
+  <Property name="events" default="null"/>
+
+  <Method name="getData" arguments=""><![CDATA[
+    var inherits = "";
+    if (this.hasAttr("inherits"))
+      inherits = this.root.templates.apply("WidgetInherits", {inherits: this.attr("inherits")});
+    return $.extend({
+      version: this.attr("version"), 
+      inherits: inherits, 
+      options: this.options ? this.options.toJavaScript() : "",
+      properties: this.properties ? this.properties.toJavaScript() : "",
+      events: this.events ? this.events.toJavaScript() : "",
+      methods: this.methods ? this.methods.toJavaScript() : ""
+    }, this.getInfo());
+  ]]></Method>
+</Class>   
+
+
+<Class id="component" arguments="">
+  <Validator element-key="component" id="*identifier" name="*identifier" implementation="*text" description="text"/>
+  <Property name="texts" default="null"/>
+  <Property name="properties" default="null"/>
+  <Property name="methods" default="null"/>
+  <Property name="vars" default="{}"/>
+  <Property name="enums" default="{}"/>
+  <Property name="scripts" default="{}"/>
+  <Property name="functions" default="{}"/>
+  <Property name="objects" default="{}"/>
+  <Property name="classes" default="{}"/>
+  <Property name="components" default="{}"/>    
+      
+  <Event name="onChildrenCreated" arguments="context"><![CDATA[
+    var next = this.parent, full = this.attr("name");
+    while(next){
+      if (next.tag=="Component" || next.tag=="ComponentPsi")
+        full = next.attr("name")+"."+full;
+      next = next.parent;
+    }
+    this.fullName = full;
+  ]]></Event>
+  
+  <Method name="getData" arguments=""><![CDATA[
+    //Crear contenido
+    var content = "", returnContent = "", returnProperties = "", returnMethods = "";
+      
+    for(var uid in this.children){
+      var element = this.children[uid];
+      if (["Structure","Properties","Methods"].indexOf(element.tag)==-1) {
+        if (this.root.includeHeader)
+          content += this.templates.apply("Header", element.getInfo());
+        content += element.toJavaScript();
+        if (element.attr("public")=="yes")
+          returnContent += this.templates.apply("ComponentReturnContent", {name: element.attr("name"), type: element.tag});
+      }
+    }
+      
+    //Crear retorno de propiedades
+    if (this.properties) 
+      for(var i=0; i<this.properties._ref.attributes.length; i++)
+        returnProperties += this.templates.apply("ComponentReturn", {name: this.properties._ref.attributes[i].name});
+          
+    //Crear retorno de mátodos
+    if (this.methods)
+      for(var i=0; i<this.methods._ref.attributes.length; i++)
+        returnMethods += this.templates.apply("ComponentReturn", {name: this.methods._ref.attributes[i].name});  
+      
+    //Crear inicialización
+    var initialize = "", templates = this.templates;
+    if (this.implementation.initialize){
+      var data = {name: this.implementation.initialize.attr("name"), body:  this.implementation.initialize.text()};
+      initialize = templates.apply("ComponentInitialize", data);
+    }  
+      
+    return $.extend({
+      properties: this.properties ? this.properties.toJavaScript() : "",
+      content: content,
+      methods: this.methods ? this.methods.toJavaScript() : "",
+      initialize: initialize,
+      returnProperties: returnProperties,
+      returnContent: returnContent,
+      returnMethods: returnMethods
+    }, this.getInfo());
+  ]]></Method>
+</Class> 
+
+</ModelImplementationPsi>
+

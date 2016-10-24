@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelImplementationPsi>
+
+
+<Texts id="mpsi_messages">
+  <Language key="ES" name="Spanish">
+    <Text key="DEBUG_INCLUDE_EXIST">Ya existe Implementación con alias '$1'. No se incluirá nuevamente</Text>
+    <Text key="DEBUG_INCLUDE_REGISTER">Cargando Implementación con alias '$1'</Text>
+    <Text key="SAVE_ERROR_AJAX">Error guardando '$1'. Status = $2</Text>
+    <Text key="SAVE_ERROR">Error guardando '$1'. Error servidor: $2</Text>
+    <Text key="STRUCTURE_CHILD_ERROR">No se ha definido elemento '$1' en la estructura '$2'</Text>
+    <Text key="IMPLEMENTATION_ALIAS_ERROR">Elemento: $1. No existe implementación con alias '$2'. </Text>
+    <Text key="IMPLEMENTATION_ELEMENT_ERROR">Elemento: $1. En el fichero alias '$2', NO existe la implementación del elemento '$3'. </Text>
+  </Language>
+</Texts>
+
+<Enum id="element_type">
+  <Member name="Var" value="'Var'"/>
+  <Member name="Enum" value="'Enum'"/>
+  <Member name="Function" value="'Function'"/>
+  <Member name="Object" value="'Object'"/>
+  <Member name="Class" value="'Class'"/>
+  <Member name="Component" value="'Component'"/>
+  <Member name="ComponentPsi" value="'ComponentPsi'"/>
+</Enum>
+  
+  
+<Class id="templates" arguments="models">
+  <Property name="sources" default="{}"/>
+  <Property name="models" default="this.init(models)"/>
+  
+  <Method name="init" arguments="models"><![CDATA[
+    var self = this;
+    $(models.templatesDocument).find("Template").each(function(){
+      self.register($(this).attr("id"), $(this).text());
+    });
+    return models;
+  ]]></Method>
+  
+  <Method name="register" arguments="tag, source"><![CDATA[
+    this.sources[tag] = source;   
+  ]]></Method>
+  
+  <Method name="apply" arguments="tag, data"><![CDATA[
+    var source = this.sources[tag];
+    return source.replace(/\{\{([\w\.]*)\}\}/g, function (str, key) {
+      var keys = key.split("."), 
+          v = data[keys.shift()];        
+      for (var i = 0, l = keys.length; i < l; i++) 
+        v = v[keys[i]];        
+      return (typeof v !== "undefined" && v !== null) ? v : "";
+    });    
+  ]]></Method>
+</Class> 
+
+
+
+<Class id="implementation" arguments="">
+  <Validator element-key="implementation" alias="*text" url="*text"/>
+  
+  <Event name="onInit" arguments=""><![CDATA[
+    this.alias = this.root.acronym()+"."+this.attr("alias");
+    if (!PsiData.document.exist(this.alias)) {
+      var url = this.attr("url");
+      PsiData.document.register(this.alias, url);
+    }
+    this.compile();
+  ]]></Event>
+  
+  <Method name="compile" arguments=""><![CDATA[
+    PsiXML.Programs.remove(this.alias);
+    var program = MIPsi.run(this.alias, { xml: PsiData.document.get(this.alias) });
+    this.source  = program.object;
+  ]]></Method>
+</Class>
+
+
+
+<Class id="base" arguments="">
+  <Event name="onInit" arguments=""><![CDATA[
+    //Enlazar implementación
+    if (this.hasAttr("implementation")) {
+      var alias = this.root.acronym()+"."+this.attr("implementation"),
+          impl = this.root.implementations[alias]; 
+      if (impl==null)
+			  throw new PsiError("MPSI.IMPLEMENTATION_ALIAS_ERROR", [this._pathtag, alias], [this]);
+      this.implementation = impl.source["get"+this.tag]( this.id() );
+      if (this.implementation==null)
+			  throw new PsiError("MPSI.IMPLEMENTATION_ELEMENT_ERROR", [this._pathtag, alias, this.id()], [this]);
+    }
+    //Referencia a las plantillas
+    this.templates = this.root.templates;
+    
+    //Obtener componente si existe
+    if (ElementType[this.tag]) {
+      var next = this.parent;
+      while(next){
+        if (next.tag=="Component" || next.tag=="ComponentPsi") {
+          this.component = next;
+          break;
+        }
+        next = next.parent;
+      }
+    }
+  ]]></Event>
+  
+  <Method name="getInfo" arguments=""><![CDATA[
+    return {
+      id: this.attr("id"),
+      name: this.attr("name"),
+      tag: this.tag,
+      public: this.hasAttr("public") ? this.attr("public")=="yes" : false,
+      description: this.hasAttr("description") ? this.attr("description") : ""
+    };
+  ]]></Method>
+  
+  <Method name="getData" arguments=""><![CDATA[
+    return this.getInfo();
+  ]]></Method>
+  
+  <Method name="toJavaScript" arguments=""><![CDATA[
+    return (this.attr("exclude")!="yes") ? this.root.templates.apply(this.tag, this.getData()) : "";
+  ]]></Method>
+</Class> 
+
+
+
+<Class id="properties" arguments="">
+  <Validator element-key="properties"/>
+  <Property name="separatorFinal" default="''"/>
+  
+  <Method name="toJavaScript" arguments=""><![CDATA[
+    var text = "",
+        templateName = "Property"+this.parent.tag,
+        templates = this.root.templates;
+    for(var i=0; i<this._ref.attributes.length; i++){
+      var attr = this._ref.attributes[i],
+          impl = this.parent.implementation.getProperty(attr.name);
+      if (impl==null) 
+        throw new Error("Propiedad '"+attr.name+"' NO implementado");
+      var data = {
+            name: attr.name, 
+            value: impl.attr("default"),
+            description: attr.value,
+            separator: i<this._ref.attributes.length-1 ? "," : this.separatorFinal
+          };
+      if (this.root.includeHeader)
+        text += templates.apply("PropertyInfo", data);  
+      text += templates.apply(templateName, data);  
+    }
+    return text;
+  ]]></Method>
+</Class> 
+
+
+  
+<Class id="options" arguments="">
+  <Validator element-key="options"/>
+  <Method name="toJavaScript" arguments=""><![CDATA[
+    var text = "",
+        templates = this.root.templates;
+    for(var i=0; i<this._ref.attributes.length; i++){
+      var attr = this._ref.attributes[i],
+          impl = this.parent.implementation.getOption(attr.name);
+      if (impl==null) 
+        throw new Error("Opción widget '"+attr.name+"' NO implementado");
+      var data = {
+            name: attr.name, 
+            value: impl.text(),
+            description: attr.value,
+            separator: i<this._ref.attributes.length-1 ? "," : ""
+          };
+      if (this.root.includeHeader)
+        text += templates.apply("OptionInfo", data);  
+      text += templates.apply("OptionWidget", data);  
+    }
+    return text;
+  ]]></Method>
+</Class>  
+
+
+<Class id="statics" arguments="">
+  <Method name="toJavaScript" arguments=""><![CDATA[
+    var text = "", 
+        templates = this.root.templates;
+    for(var i=0; i<this._ref.attributes.length; i++){
+      var attr = this._ref.attributes[i],
+          impl = this.parent.implementation.getStatic(attr.name);
+      if (impl==null) 
+        throw new Error("Atributo '"+attr.name+"' NO implementado");
+      var data = {
+            class: this.parent.attr("name"),
+            name: attr.name, 
+            value: impl ? impl.text() : "",
+            description: attr.value
+          };
+      if (this.root.includeHeader)
+        text += templates.apply("StaticInfo", data);  
+      text += templates.apply("Static", data);  
+    }
+    return text;
+  ]]></Method>
+</Class> 
+
+
+<Class id="methods" arguments="">
+  <Property name="separatorFinal" default="''"/>
+  
+  <Method name="toJavaScript" arguments=""><![CDATA[
+    var text = "",
+        templates = this.root.templates;
+    for(var i=0; i<this._ref.attributes.length; i++){
+      var attr = this._ref.attributes[i],
+          type = this.tag=="Methods" ? "Method":"Event",
+          impl = this.parent.implementation["get"+type](attr.name),
+          templateName = (impl && impl.attr("trycatch")=="false" ? "Method" : "TryCatch")+this.parent.tag, 
+          info = {
+            name: attr.name, 
+            type: type,
+            arguments: impl ? impl.attr("arguments") : "",
+            body: impl ? impl.text() : "",
+            description: attr.value,
+            separator: i<this._ref.attributes.length-1 ? "," : this.separatorFinal
+          };
+      if (this.root.includeHeader)
+        text += templates.apply("MethodInfo", info);  
+      text += templates.apply(templateName, info);  
+    }
+    return text;
+  ]]></Method>
+</Class> 
+
+
+<Class id="texts" arguments="">
+  <Validator element-key="texts" id="*identifier" name="*identifier" implementation="*text"/>
+  
+  <Method name="toJavaScript" arguments=""><![CDATA[
+    var templates = this.root.templates, 
+        content = "", short = "", send = "",
+        languages = $(this.implementation._ref).find("Language"),
+        type = this.attr("type"),
+        itemsSend = "";
+    languages.each(function(i){
+      var itemsContent = "", itemsShort = "", 
+          items = $(this).find("Text");
+      itemsSend = "";
+      items.each(function(j){
+        var data = {code: $(this).attr("key"), message: $(this).text(), separator: j<items.length-1 ? ",":""},
+            datashort = {code: $(this).attr("key"), message: $(this).attr("short") ? $(this).attr("short"):$(this).text(), separator: j<items.length-1 ? ",":""};
+        itemsContent += templates.apply("TextsItem", data);
+        itemsShort += templates.apply("TextsItem", datashort);
+        if ($(this).attr("send")=="true")
+          itemsSend += (itemsSend=="" ? "":",")+"'"+$(this).attr("key")+"'";   
+      });
+      var data = {lang: $(this).attr("key"), items: itemsContent, separator: i<languages.length-1 ? ",":""};
+      content += templates.apply("TextsLang", data);
+      data.items = itemsShort;
+      short += templates.apply("TextsLang", data);
+      if (send=="") send = itemsSend;
+    });
+    //Construir textos de mensajes
+    var data = {
+          name: this.attr("name"), 
+          content: content,
+          short: short,
+          send: send
+        };
+    return templates.apply(this.tag, data);
+  ]]></Method>
+</Class> 
+
+
+</ModelImplementationPsi>

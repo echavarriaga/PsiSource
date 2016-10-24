@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelImplementationPsi>
+
+  
+<Object id="validator">
+  <Method name="_attrToString" arguments="attr" trycatch="false"><![CDATA[
+    return '<' + attr.tag + ' ... ' + attr.name + '="' + attr.value + '" />';
+  ]]></Method>
+  
+  <Method name="_append" arguments="name, impl" trycatch="false"><![CDATA[
+    this[name] = impl;
+  ]]></Method>
+  
+  <Method name="digits" arguments="attr" trycatch="false"><![CDATA[
+    if (typeof attr.value =='number') return attr.value;
+    if (!/^\d+$/.test(attr.value))
+      throw new PsiError("PSIXML.VALIDATE_DIGITS", [this._attrToString(attr)], [attr]);
+    return parseInt(attr.value);
+  ]]></Method>
+  
+  <Method name="number" arguments="attr" trycatch="false"><![CDATA[
+    if (attr.value==null || typeof attr.value =='number') return attr.value;
+    if (!(/^[-+]?\d+(\.\d+)?$/.test(attr.value.replace(/^\s+|\s+$/g, ''))))
+      throw new PsiError("PSIXML.VALIDATE_NUMBER", [this._attrToString(attr)], [attr]);
+    return parseFloat(attr.value);
+  ]]></Method>
+  
+  <Method name="integer" arguments="attr" trycatch="false"><![CDATA[
+    if (attr.value==null || typeof attr.value =='number') return attr.value;
+    if (!(/^[-]?\d+(\.\d+)?$/.test(attr.value.replace(/^\s+|\s+$/g, ''))))
+      throw new PsiError("PSIXML.VALIDATE_INTEGER", [this._attrToString(attr)], [attr]);
+    return parseInt(attr.value);
+  ]]></Method>
+  
+  <Method name="range" arguments="attr, params" trycatch="false"><![CDATA[
+    var min = (params == null || params.length == 0) ? -Infinity : params.length >= 1 ? (params[0] != '-' ? parseFloat(params[0]) : -Infinity) : -Infinity,
+        max = (params == null || params.length == 0) ? Infinity : params.length >= 2 ? (params[1] != '-' ? parseFloat(params[1]) : Infinity) : Infinity,
+        value = parseFloat(attr.value);
+    if (!(min <= value && value <= max))
+      throw new PsiError("PSIXML.VALIDATE_RANGE", [this._attrToString(attr), min, max], [attr]);
+    return parseFloat(attr.value);
+  ]]></Method>
+  
+  <Method name="boolean" arguments="attr" trycatch="false"><![CDATA[
+    if (typeof attr.value=='boolean') return attr.value;
+    if ( !(/(true|false)/.test(attr.value)) )
+      throw new PsiError("PSIXML.VALIDATE_BOOLEAN", [this._attrToString(attr)], [attr]);
+    return eval(attr.value);
+  ]]></Method>
+  
+  <Method name="identifier" arguments="attr" trycatch="false"><![CDATA[
+    if (!(/^[a-zA-Z0-9_.\-]+$/.test(attr.value)))
+      throw new PsiError("PSIXML.VALIDATE_IDENTIFIER", [this._attrToString(attr)], [attr]);
+    return attr.value;
+  ]]></Method>
+  
+  <Method name="variable" arguments="attr" trycatch="false"><![CDATA[
+    if (!(/^[a-zA-Z0-9_]+$/.test(attr.value)))
+      throw new PsiError("PSIXML.VALIDATE_VARIABLE", [this._attrToString(attr)], [attr]);
+    return attr.value;
+  ]]></Method>
+  
+  <Method name="classcss" arguments="attr" trycatch="false"><![CDATA[
+    if (!(/^[ a-zA-Z0-9_.:\-]+$/.test(attr.value)))
+      throw new PsiError("PSIXML.VALIDATE_CLASSCSS", [this._attrToString(attr)], [attr]);
+    return attr.value;
+  ]]></Method>
+  
+  <Method name="select" arguments="attr, params" trycatch="false"><![CDATA[
+    if (params.indexOf(attr.value) < 0)
+        throw new PsiError("PSIXML.VALIDATE_SELECT", [this._attrToString(attr), params], [attr]);
+    return attr.value;
+  ]]></Method>
+  
+  <Method name="text" arguments="attr" trycatch="false"><![CDATA[
+    return attr.value;
+  ]]></Method>
+  
+  <Method name="dateTime" arguments="attr" trycatch="false"><![CDATA[
+    if (!/Invalid|NaN/.test(new Date(attr.value)))
+      throw new PsiError("PSIXML.VALIDATE_DATETIME", [this._attrToString(attr)], [attr]);
+    return new Date(attr.value);
+  ]]></Method>
+  
+  <Method name="dateISO" arguments="attr" trycatch="false"><![CDATA[
+    if (!/^\d{4}[\/-]\d{1,2}[\/-]\d{1,2}$/.test(attr.value))
+      throw new PsiError("PSIXML.VALIDATE_DATEISO", [this._attrToString(attr)], [attr]);
+    var date = attr.value.split("/");
+    return new Date(parseInt(date[0]), parseInt(date[1]), parseInt(date[2]));
+  ]]></Method>
+  
+  <Method name="email" arguments="attr" trycatch="false"><![CDATA[
+    if (!/^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))$/i.test(attr.value))
+      throw new PsiError("PSIXML.VALIDATE_EMAIL", [this._attrToString(attr)], [attr]);
+    return attr.value;
+  ]]></Method>
+  
+  <Method name="url" arguments="attr" trycatch="false"><![CDATA[
+    if (!/^(https?|ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i.test(attr.value))
+      throw new PsiError("PSIXML.VALIDATE_URL", [this._attrToString(attr)], [attr]);
+    return attr.value;
+  ]]></Method>
+</Object>
+
+
+  
+<Class id="definition_attribute" arguments="name, mandatory, defaultValue">
+  <Property name="name" default="name"/>
+  <Property name="mandatory" default="mandatory"/>
+  <Property name="defaultValue" default="defaultValue"/>
+  <Property name="validates" default="{}"/>
+  
+  <Method name="addValidate" arguments="name, params" trycatch="false"><![CDATA[
+    this.validates[name] = params;
+  ]]></Method>
+  
+  <Method name="compute" arguments="attr" trycatch="false"><![CDATA[
+    //Determinar existencia de validadores
+    if (jQuery.isEmptyObject(this.validates)) 
+      return attr.value;
+    //Validar atributo y computar valor
+    var value = null;
+    if (attr.value==null && this.defaultValue!=null) 
+      attr.value = this.defaultValue;
+    if (this.mandatory && attr.value==null) 
+      throw new PsiError("PSIXML.PSI_ELEMENT_ATTRIBUTE_MANDATORY", [attr.tag, attr.name], [this, attr]);
+    for (var name in this.validates) 
+      value = Validator[name](attr, this.validates[name]);
+    return value;
+  ]]></Method>
+  
+  <Method name="getDefault" arguments="tag" trycatch="false"><![CDATA[
+    if (jQuery.isEmptyObject(this.validates)) 
+      return this.defaultValue;
+    var attr = {name: this.name, value: this.defaultValue, tag: tag};
+    for (var name in this.validates) 
+      value = Validator[name](attr, this.validates[name]);
+    return value;
+  ]]></Method>
+</Class>
+
+  
+
+<Class id="definition_element" arguments="key, tag, STRUCTURE">
+  <Property name="key" default="key"/>
+  <Property name="tag" default="tag"/>
+  <Property name="STRUCTURE" default="STRUCTURE"/>
+  <Property name="mandatoryAttributes" default="new Array()"/>
+  <Property name="attributes" default="this._buildingAttributes(STRUCTURE.VALIDATOR)"/>
+  
+  <Method name="_buildingAttributes" arguments="source" trycatch="false"><![CDATA[
+    //Languages inline: [  [['*'] <attr> ['=' <default>] ':' [<validate> '(' [<param> [',']] ')'] [';']] ['|'] ]  
+    var attributes = {};
+    if (source == null || source=="") return attributes;
+
+    //Adicionar lista de atributos a la definición del elemento Psi
+    var attrs = source.split('|');
+    for (var i = 0; i < attrs.length; i++) {
+      var item = attrs[i].split(':');
+      
+      //Determinar estructura de validación
+      if (item.length != 2)
+        throw new PsiError("PSIXML.DEFINE_ELEMENT_CHILDREN_INVALID", [this.tag, item], [this, item]);
+      
+      //Crear lista de definición de atributos para el elemento
+      var s = item[0][0] == '*' ? item[0].substr(1) : item[0],
+          l = s.split("="), name = l[0],
+          attr = new DefinitionAttribute(name, item[0][0] == '*', l.length > 1 ? l[1] : null);
+      
+      //Adicionar a lista de atributos obligatorios
+      if (attr.mandatory && attr.defaultValue==null)
+        this.mandatoryAttributes.push(name);
+        
+      // Lista de validaciones del atributo
+      var validates = null;
+      if (item[1] && item[1].indexOf(";")>=0) validates = item[1].split(';');
+      else {
+        validates = new Array();
+        if (item[1]) validates.push(item[1]);
+      }
+      for (var j = 0; j < validates.length; j++) {
+        var ctype = validates[j], type = null, params = null;
+        if (ctype.lastIndexOf('(') >= 0) {
+          var list = ctype.substr(ctype.lastIndexOf('(') + 1, ctype.lastIndexOf(')') - ctype.lastIndexOf('(') - 1).split(',');
+          type = ctype.substr(0, ctype.lastIndexOf('('));
+          //Create params Validator
+          params = new Array();
+          for (var p = 0; p < list.length; p++)
+            //Para comas escapar con @@ = '@', @# = ",", @% = ";" @= = "|"
+            params.push(list[p].replace(/@@/g,":").replace(/@#/g,",").replace(/@%/g,";").replace(/@=/g,"|"));
+        }
+        else type = ctype;
+
+        //Add Validator
+        attr.addValidate(type, params);
+      }
+      
+      //Add attribute
+      attributes[attr.name] = attr;
+    }
+    return attributes;
+  ]]></Method>
+
+  <Method name="getAttribute" arguments="name" trycatch="false"><![CDATA[
+    return this.attributes[name]; 
+  ]]></Method>
+  
+  <Method name="validChildren" arguments="children" trycatch="false"><![CDATA[
+    var structure = this.STRUCTURE, 
+        invalidElements = new Array();
+    
+    //Validate children
+    if (structure.STRICT) {
+      children.each(function() {
+        if (structure.CHILDREN[this.nodeName]==null) 
+          invalidElements.push(this.nodeName);
+      });
+      if (invalidElements.length>0)
+        throw new PsiError("PSIXML.DEFINE_ELEMENT_CHILDREN_INVALID", [this.tag, invalidElements.toString()], [this, invalidElements]);
+    }
+  ]]></Method>
+    
+  <Method name="create" arguments="reference, parent, program, context"><![CDATA[
+    var CLASS = this.STRUCTURE.CLASS ? this.STRUCTURE.CLASS : "PsiElement",
+        newElement = eval("new "+ CLASS + "()");
+    newElement._init(reference, this, parent, program, context);
+    return newElement;
+  ]]></Method>
+</Class>
+
+
+
+<Class id="definition_language" arguments="alias, GRAMMAR, parserClass">
+  <Property name="ALIAS" default="alias"/>
+  <Property name="GRAMMAR" default="GRAMMAR"/>
+  <Property name="parserClass" default="parserClass"/>
+  <Property name="elements" default="this._initElements(GRAMMAR.TAGS)"/>
+  
+  <Method name="_initElements" arguments="TAGS"><![CDATA[
+    var map = {};
+    for (var key in TAGS)
+      map[key] = new DefinitionElement(key, TAGS[key].TAG, TAGS[key]);
+    return map;
+  ]]></Method>
+  
+  <Method name="tagsToCodeMirror" arguments=""><![CDATA[
+    var root = this.GRAMMAR.TAGS[this.GRAMMAR.ROOT].TAG,
+        tags = {};
+    tags["!"+root] = [root];
+    for (var key in this.GRAMMAR.TAGS) {
+      var t = this.GRAMMAR.TAGS[key];
+      //Establecer atributos
+      var attrsElement = this.elements[key].attributes, 
+          attributes = {};
+      for(var name in attrsElement){
+        var attr = attrsElement[name]; 
+        attributes[name] = null;
+        for (var i in attr.validates) {
+          var array = attr.validates[i];
+          if (array && attributes[name])
+            attributes[name] = attributes[name].concat(array);
+          else if (array)
+            attributes[name] = array.slice(0);
+        }  
+      }
+      //Establecer hijos
+      var children = new Array();
+      for (var name in t.CHILDREN)
+        children.push(name);
+      //Crear registro para CodeMirror
+      tags[t.TAG] = { attrs: attributes, children: children };
+    };
+    return tags;
+  ]]></Method>
+  
+  <Method name="createElement" arguments="elementId, reference, parent, program, context" trycatch="false"><![CDATA[
+    if (!reference) 
+      throw new PsiError("PSIXML.LANGUAGE_PSI_NULL_ELEMENT", [this.GRAMMAR.NAME], [program, elementId, reference, parent]);
+    if (!program) 
+      throw new PsiError("PSIXML.LANGUAGE_PSI_NULL_DOCUMENT", [this.GRAMMAR.NAME], [program, elementId, reference, parent]);
+    if (!this.elements[elementId])
+      throw new PsiError("PSIXML.LANGUAGE_PSI_NOT_EXIST_ELEMENT", [this.GRAMMAR.NAME, reference.nodeName], [program, elementId, reference, parent]);
+    return this.elements[elementId].create(reference, parent, program, context);
+  ]]></Method>
+</Class>
+
+
+<Component id="language_psi">
+  <Property name="languages" default="{}"/>
+  
+  <Method name="register" arguments="alias, GRAMMAR, parserClass" trycatch="false"><![CDATA[
+    //Registrar Lenguage Psi si existe en la gramatica NAME, TAGS and ROOT
+    if (GRAMMAR["NAME"]==null) 
+      throw new PsiError("PSIXML.LANGUAGE_PSI_FACTORY_ERROR_NAME", [alias], [this, alias, GRAMMAR]);
+    if (GRAMMAR["TAGS"]==null) 
+      throw new PsiError("PSIXML.LANGUAGE_PSI_FACTORY_ERROR_TAGS", [alias], [this, alias, GRAMMAR]);
+    if (GRAMMAR["ROOT"]==null) 
+      throw new PsiError("PSIXML.LANGUAGE_PSI_FACTORY_ERROR_ROOT", [alias], [this, alias, GRAMMAR]);
+    
+    //Registrar Lenguaje Psi
+    languages[alias] = new DefinitionLanguage(alias, GRAMMAR, parserClass);
+    return this;
+  ]]></Method>  
+  
+  <Method name="get" arguments="alias" trycatch="false"><![CDATA[
+    return languages[alias];
+  ]]></Method>
+  
+  <Method name="getAll" arguments="" trycatch="false"><![CDATA[
+    return languages;
+  ]]></Method>
+  
+  <Method name="addValidate" arguments="name, impl" trycatch="false"><![CDATA[
+    validator.appendValidator(name, impl);
+  ]]></Method>
+</Component>
+
+</ModelImplementationPsi>

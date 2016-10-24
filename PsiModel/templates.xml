@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TemplatesPsi>
+
+<Template id="ModelPsi"><![CDATA[/* Generated power ModelPsi (@VERSION 2.1) 
+* Model Name: {{name}}
+* Version: {{version}}
+* Author: Enrique Chavarriaga
+* 
+* Copyright 2015.
+* Dual licensed under the MIT or GPL Version 2 licenses.
+* http://jquery.org/license
+* http://www.b2tconcept/psiXml/license
+*
+*/
+
+/* Type DEBUG Psi -------------- */
+if (PsiOut && PsiOut.console) PsiOut.console.debug = {{debug}};
+/* ----------------------------- */
+
+{{content}}
+]]></Template>
+
+<Template id="Header"><![CDATA[
+/*-----------------------------------------------------
+*={{tag}}[{{id}}]: {{name}}
+* Description: {{description}}
+*-----------------------------------------------------*/]]></Template>
+
+<Template id="Var"><![CDATA[
+var {{name}} = {{value}};
+]]></Template>
+
+<Template id="Enum"><![CDATA[
+var {{name}} = { {{members}}
+};   
+]]></Template>
+<Template id="Member"><![CDATA[  
+  {{name}}: {{value}}{{separator}}]]></Template>
+
+<Template id="Function"><![CDATA[
+function {{name}} ({{arguments}}) { {{body}} };   
+]]></Template>
+  
+<Template id="PropertyInfo"><![CDATA[  
+  //Property: {{name}}. Description: {{description}}]]></Template>  
+<Template id="PropertyObject"><![CDATA[  
+  {{name}}: {{value}}{{separator}}]]></Template>
+<Template id="PropertyClass"><![CDATA[  
+  this.{{name}} = {{value}};]]></Template>
+<Template id="PropertyWidget"><![CDATA[  
+  {{name}}: {{value}},]]></Template>
+<Template id="PropertyParser"><![CDATA[  
+  this.{{name}} = {{value}};]]></Template>
+<Template id="PropertyComponent"><![CDATA[  
+  var {{name}} = {{value}};]]></Template>
+<Template id="PropertyComponentPsi"><![CDATA[  
+  var {{name}} = {{value}};]]></Template>
+
+<Template id="MethodInfo"><![CDATA[  
+  //{{type}}: {{name}}. Description: {{description}}]]></Template>  
+<Template id="MethodObject"><![CDATA[  
+  {{name}}: function({{arguments}}){ {{body}} }{{separator}}]]></Template>
+<Template id="MethodClass"><![CDATA[  
+  {{name}}: function({{arguments}}){ {{body}} }{{separator}}]]></Template>
+<Template id="MethodWidget"><![CDATA[  
+  {{name}}: function({{arguments}}){ {{body}} },]]></Template>
+<Template id="MethodParser"><![CDATA[  
+  {{name}}: function({{arguments}}){ {{body}} }{{separator}}]]></Template>
+<Template id="MethodComponent"><![CDATA[  
+  function {{name}}({{arguments}}){ {{body}} };]]></Template>
+<Template id="MethodComponentPsi"><![CDATA[  
+  function {{name}}({{arguments}}){ {{body}} };]]></Template>
+<Template id="TryCatchObject"><![CDATA[  
+  {{name}}: function({{arguments}}){ 
+  try { {{body}} } catch(e) { if (e.type==null) throw new PsiError("PSIXML.PROCESS",[this._pathtag ?  this._pathtag : this.toString(),"{{name}}", $.isFunction(this.id) ? this.id() : (this.id?this.id:""), e.message ? e.message : e.toString()],[e,this]); else throw e; }
+  }{{separator}}]]></Template>
+<Template id="TryCatchClass"><![CDATA[  
+  {{name}}: function({{arguments}}){ 
+  try { {{body}} } catch(e) { if (e.type==null) throw new PsiError("PSIXML.PROCESS",[this._pathtag ?  this._pathtag : this.toString(),"{{name}}", $.isFunction(this.id) ? this.id() : (this.id?this.id:""), e.message ? e.message : e.toString()],[e,this]); else throw e; } 
+  }{{separator}}]]></Template>
+<Template id="TryCatchWidget"><![CDATA[  
+  {{name}}: function({{arguments}}){ 
+  try { {{body}} } catch(e) { if (e.type==null) throw new PsiError("PSIXML.PROCESS",[this._pathtag ?  this._pathtag : this.toString(),"{{name}}", $.isFunction(this.id) ? this.id() : (this.id?this.id:""), e.message ? e.message : e.toString()],[e,this]); else throw e; } 
+  },]]></Template>
+<Template id="TryCatchParser"><![CDATA[  
+  {{name}}: function({{arguments}}){ 
+  try { {{body}} } catch(e) { if (e.type==null) throw new PsiError("PSIXML.PROCESS",[this._pathtag ?  this._pathtag : this.toString(),"{{name}}", $.isFunction(this.id) ? this.id() : (this.id?this.id:""), e.message ? e.message : e.toString()],[e,this]); else throw e; } 
+  }{{separator}}]]></Template>
+<Template id="TryCatchComponent"><![CDATA[  
+  function {{name}}({{arguments}}){ 
+  try { {{body}} } catch(e) { if (e.type==null) throw new PsiError("PSIXML.PROCESS",[this._pathtag ?  this._pathtag : this.toString(),"{{name}}", $.isFunction(this.id) ? this.id() : (this.id?this.id:""), e.message ? e.message : e.toString()],[e,this]); else throw e; } 
+  };]]></Template>
+<Template id="TryCatchComponentPsi"><![CDATA[  
+  function {{name}}({{arguments}}){ 
+  try { {{body}} } catch(e) { if (e.type==null) throw new PsiError("PSIXML.PROCESS",[this._pathtag ?  this._pathtag : this.toString(),"{{name}}", $.isFunction(this.id) ? this.id() : (this.id?this.id:""), e.message ? e.message : e.toString()],[e,this]); else throw e; } 
+  };]]></Template>
+
+<Template id="StaticInfo"><![CDATA[  
+//Static: {{name}}. Description: {{description}}]]></Template>  
+<Template id="Static"><![CDATA[  
+{{class}}.{{name}} = {{value}};]]></Template>
+  
+<Template id="Object"><![CDATA[
+var {{name}} = {
+  //Properties {{properties}}
+  //Methods {{methods}}
+};   
+]]></Template>
+
+<Template id="Class"><![CDATA[
+function {{name}} ({{constructor}}) {
+  //Properties {{properties}} {{init}}
+};{{inheritance}}{{statics}} 
+//* Definitions Events and Methods
+{{name}}.methods({
+  //Methods {{methods}}
+  //Events {{events}}
+  toString: function() { return "{{name}}"; }
+});
+]]></Template>
+<Template id="ClassInit"><![CDATA[
+  //Initialize class
+  {{init}};]]></Template>
+<Template id="ClassInheritance"><![CDATA[
+//Inheritance
+{{name}}.inherits({{inherits}});]]></Template>
+
+
+<Template id="Component"><![CDATA[
+var {{name}} = (function () {  
+
+  //Component Properties {{properties}}
+
+{{content}}
+
+  //Component Methods {{methods}}
+
+{{initialize}}
+/*-----------------------------------------------------
+* Component Definition: {{name}}  
+*-----------------------------------------------------*/
+return {
+  //Content {{returnContent}}
+  //Properties {{returnProperties}}
+  //Methods {{returnMethods}}
+  toString: function() { return "{{name}}"; }
+};
+})(); 
+]]></Template>
+<Template id="ComponentReturn"><![CDATA[
+  {{name}}: {{name}},]]></Template>
+<Template id="ComponentReturnContent"><![CDATA[
+  {{name}}: {{name}}, //* Type: {{type}}]]></Template>  
+<Template id="ComponentInitialize"><![CDATA[
+/*-----------------------------------------------------
+* Module Initialize: {{name}}  
+*-----------------------------------------------------*/
+function {{name}}() { {{body}}
+}
+{{name}}();
+]]></Template>  
+
+
+
+<Template id="Texts"><![CDATA[
+var {{name}}_SHORT_MAP = { {{short}}
+}; 
+var {{name}}_MAP = { {{content}}
+};//* Register texts PsiXML
+if (PsiOut.console.debug) {{name}}_SHORT_MAP = {{name}}_MAP;
+PsiText.registerSet("{{name}}", PsiOut.console.debug ? {{name}}_MAP : {{name}}_SHORT_MAP);
+PsiText.registerSet("{{name}}_MAP", {{name}}_MAP);
+//Send type
+var {{name}}_SEND = [{{send}}];
+]]></Template>
+
+<Template id="TextsLang"><![CDATA[
+  {{lang}}: { {{items}}
+  }{{separator}}]]></Template>
+<Template id="TextsItem"><![CDATA[
+    {{code}}: "{{message}}"{{separator}}]]></Template>  
+  
+<Template id="Exception"><![CDATA[
+function {{name}}(){
+  this.name = "{{name}}"; 
+  this.message = PsiText.ERROR(TEXTS_ALIAS, arguments); 
+}
+{{name}}.prototype = new Error();
+]]></Template> 
+
+<Template id="Warning"><![CDATA[
+function {{name}}(){
+  this.name = "{{name}}"; 
+  this.message = PsiText.WARNING(TEXTS_ALIAS, arguments); 
+}
+{{name}}.prototype = new Error();
+]]></Template>
+
+<Template id="Debug"><![CDATA[
+function {{name}}(){ PsiText.DEBUG(TEXTS_ALIAS, arguments); }
+]]></Template>
+
+
+<Template id="ComponentPsi"><![CDATA[
+var {{name}} = (function () {  
+
+{{structure}}
+
+/*-----------------------------------------------------
+* Component:  Properties
+*-----------------------------------------------------*/{{properties}}
+
+{{content}}
+
+/*-----------------------------------------------------
+* Component:  Methods
+*-----------------------------------------------------*/{{methods}}
+
+{{parse}}
+
+/*-----------------------------------------------------
+* Register Component to PsiXML:  {{name}}
+*-----------------------------------------------------*/
+PsiXML.registerLanguagePsi(ALIAS, GRAMMAR, {{parserClass}});
+
+function _run(name, options, context){
+  return PsiXML.traductor_PxmlToPobj(ALIAS, name, options, context);
+}
+function _language(){
+  return PsiXML.LanguagePsi.get(ALIAS);
+}
+
+{{initialize}}
+/*-----------------------------------------------------
+* Component Definition: {{name}}  
+*-----------------------------------------------------*/
+return {
+  //Content {{returnContent}}
+  //Properties {{returnProperties}}
+  //Methods {{returnMethods}}
+  toString: function() { return "{{name}}"; },
+  run: _run,
+  language: _language
+};
+})(); 
+]]></Template>
+
+<Template id="Identifiers"><![CDATA[
+var {{nameId}} = "{{id}}";]]></Template>
+<Template id="Structure"><![CDATA[
+/*-----------------------------------------------------
+* Constants Identifiers Grammar: {{grammar}} 
+*-----------------------------------------------------*/{{identifiers}}
+ID_TAGS = {};
+
+/*-----------------------------------------------------
+* Structure to GrammarPsi: {{grammar}}
+*-----------------------------------------------------*/{{elements}}
+
+var GRAMMAR = {
+      NAME: "{{grammar}}",
+      TAGS: ID_TAGS,
+      ROOT: {{root}}
+    };
+var ALIAS = "{{grammar}}";
+]]></Template>   
+<Template id="StructureElement"><![CDATA[
+ID_TAGS[{{nameId}}] = {
+  CLASS: "{{full}}",
+  TAG: "{{tag}}",
+  MULTIPLICITY: {{multiplicity}},
+  CHILDREN: {{children}},
+  STRICT: {{strict}},
+  SEND_CONTEXT: {{send}},
+  VALIDATOR: {{validator}}
+};]]></Template>  
+
+<Template id="Parser"><![CDATA[
+function {{name}} ({{constructor}}) {
+  //Properties {{properties}} {{init}}
+};
+{{name}}.inherits(PsiXML.Parser);{{statics}} 
+//* Definitions Events and Methods
+{{name}}.methods({
+  {{define}} 
+  //Methods {{methods}}
+  //Events {{events}}
+  toString: function() { return "{{name}}"; }
+});
+]]></Template>
+<Template id="DefineProperties"><![CDATA[
+  //Define Properties
+  defineProperties: function(newElement) {
+    if (newElement.parent) {
+      switch (newElement.parent._def.key) { {{elements}}
+      }
+    }
+  },]]></Template>
+<Template id="DefineElement"><![CDATA[
+        case {{nameId}}:
+          switch (newElement.tag) { {{childs}}
+          };
+          break;]]></Template>  
+<Template id="DefineChild"><![CDATA[
+            case "{{tag}}": newElement.parent{{field}} = newElement; break;]]></Template>  
+
+  
+<Template id="Widget"><![CDATA[
+(function( $, undefined ) {
+
+$.widget( "{{name}}", {{inherits}}{
+  options: { {{options}} 
+  },
+  //Properties {{properties}}
+  //Methods {{methods}}
+  //Events {{events}}
+  version: "{{version}}"
+});
+
+}(jQuery));
+]]></Template>
+<Template id="WidgetInherits"><![CDATA[ $.{{inherits}}, ]]></Template>
+<Template id="OptionInfo"><![CDATA[  
+    //Option: {{name}}. Description: {{description}}]]></Template>  
+<Template id="OptionWidget"><![CDATA[  
+    {{name}}: {{value}}{{separator}}]]></Template>
+  
+</TemplatesPsi>

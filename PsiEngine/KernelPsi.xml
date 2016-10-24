@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelImplementationPsi>
+
+<Enum id="program_state">
+  <Member name="INIT" value="'Init'"/>
+  <Member name="SCANNER" value="'Scanner'"/>
+  <Member name="PARSE" value="'Parse'"/>
+  <Member name="RUN" value="'Run'"/>
+  <Member name="STOP" value="'Stop'"/>
+  <Member name="ERROR" value="'Error'"/>
+</Enum>
+
+  
+<Class id="psi_element" arguments="">
+  <Property name="_def" default="null"/>
+  <Property name="_data" default="null"/>
+  <Property name="_psixml" default="PsiXML"/>
+  <Property name="children" default="{}"/>
+  <Property name="parent" default="null"/>
+  
+  <Event name="onInit" arguments=""></Event>
+  <Event name="onAddChild" arguments="uid, psiElement"></Event>
+  <Event name="onRemove" arguments="self"></Event>
+  <Event name="onChildrenCreated" arguments="context"></Event>
+  
+  <Method name="_init" arguments="reference, definition, parent, program, context"><![CDATA[
+    //Iniciar propiedades
+    this._ref = reference;
+    this._ref["_ref"] = this;
+    this._def = definition;
+    this.parent = parent;
+    this.program = program;
+    this.root = this.program.object;
+    this.children = {};
+    this.tag = reference.nodeName;
+    this.context = context;
+    this.parseError = null;
+   
+    //Inicializar elementos data
+    this._data = {};
+    this._dataRemove = this.hasAttr("data-remove") && this.attr("data-remove")=="yes";
+    this.datakey = {};
+    for(var i=0; i<this._ref.attributes.length; i++){
+      var attr = this._ref.attributes[i];
+      this.initData(attr.name);
+    }  
+    this.uid = this.program.getUID(this.tag);
+    
+    //Adicionar objeto a contexto
+    if (this._def.STRUCTURE.SEND_CONTEXT && context && context.add)
+      context.add(this.id(), this);
+    //Adicionar path element
+    this._pathtag = (this.parent ? this.parent._pathtag+"." : "")+this.tag+(this.hasAttr("id") ? "[id="+this.id()+"]" : ""); 
+    this.onInit();
+  ]]></Method>
+  
+  <Method name="initData" arguments="name"><![CDATA[
+    var data = name ? this.hasAttr(name) ? name.split("-") : null : null;
+    if ((data && data[0]!="data") || name=="data-remove") return;
+    
+    //Procesar atributo
+    var values = $(this._ref).attr(name).split("$$"), 
+        type = data[1];
+    for (var i=0; i<values.length;  i++){
+      var val = values[i], dp = val.indexOf(":"), key = val.substr(0,dp),
+          obj = type=="context" 
+              ? this.context[key]
+              : PsiData[type] ? PsiData[type].get(key) : null,
+          ig = val.indexOf("="), alias = val.substr(dp+1, ig-dp-1), args = val.substr(ig+1);
+      if ($.isXMLDoc(obj) || (obj && obj.jquery) || $.isFunction(obj)){
+        if ($.isFunction(obj)) 
+          this.data(alias, eval("obj("+args+")"));
+        else 
+          this.data(alias, $(obj).find(args));
+        this.datakey[alias] = key;
+      }
+      else if ($.isArray(obj) || $.isPlainObject(obj)){
+        var arg = args.split("."), result = obj;
+        for(var i=0; i<arg.length; i++)
+          if (result!=null) result = result[arg[i]];
+        this.data(alias, result);
+      }
+    }
+  ]]></Method>
+   
+  <Method name="processValue" arguments="_value"><![CDATA[
+    if (_value==null || typeof _value!='string') return _value;
+    
+    var value   = $.isEmptyObject(this._data) ? _value : apply(_value, this._data),
+        command = value.substr(0, 2),
+        body    = value.substr(2);
+    
+    /* 
+    * command: $> with function    
+    *          $= with function inlline   
+    *          $* with function inlline pero devuelve el resultado como string.   
+    *          $? reference functions, parameters: self, options, extend 
+    *          $@ get data key
+    */    
+    switch (command) {
+      case "$>":
+        var execute = new Function("self", "context", body);
+        return execute(this, this.context);
+      case "$=":
+        var execute = new Function("self", "context", "return " + body);
+        return execute(this, this.context);
+      case "$*":
+        var execute = new Function("self", "context", "return '\"'+" + body+"+'\"'");
+        return execute(this, this.context);
+      case "$?":
+        var str = body, p = str.indexOf("("),
+            name = p>0 ? str.substr(0,p).replace(" ", "") : str.replace(" ", ""), 
+            options = p>0 ? str.substr(p+1,str.indexOf(")")-p-1).split(",") : null;
+        if (PsiData.function[name]) 
+          return PsiData.function[name](this, this.context, options);
+        return null;
+      case "$@": 
+        var s = "{{"+body.replace(" ", "")+"}}";
+        return apply(s, this._data);
+    }
+    return value;
+  ]]></Method>
+  
+  <Method name="id" arguments="newId" trycatch="false"><![CDATA[
+    if (newId) $(this._ref).attr("id", newId);
+    return $(this._ref).attr("id");
+  ]]></Method>
+  
+  <Method name="attr" arguments="name, newValue"><![CDATA[
+    if (typeof name == 'string'){
+      var attrdef = this._def.getAttribute(name);
+      if (newValue!=null) {
+        var pval = this.processValue(newValue),
+            val = attrdef!=null ? attrdef.compute( {name: name, value: pval, tag: this.tag, ref: this} ) : pval;
+        $(this._ref).attr(name, newValue);
+        return val;
+      }
+      var pval = this.processValue($(this._ref).attr(name));
+      return attrdef!=null ? attrdef.compute( {name: name, value: pval, tag: this.tag, ref: this} ) : pval; 
+    }
+    else if ($.isPlainObject(name)){
+      var map = {}, list = name;
+      for(var i in list){
+        var pval = this.processValue(list[i]),
+            attrdef = this._def.getAttribute(list[i]),
+            val = attrdef!=null ? attrdef.compute( {name: i, value: pval, tag: this.tag, ref: this} ) : pval;
+        $(this._ref).attr(i, list[i]);
+        map[i] = val;
+      }
+      return map;
+    }
+    throw new PsiError("PSIXML.DEFINITION_ELEMENT_INVALID_ATTRIBUTE", [this.tag, this.name], [this]);
+  ]]></Method>
+  
+  <Method name="hasAttr" arguments="name, empty" trycatch="false"><![CDATA[
+    return $(this._ref).attr(name)!=null 
+        && (empty=!null ? (empty ? $(this._ref).attr(name)!="" : true)  : true);
+  ]]></Method>
+  
+  <Method name="validAttr" arguments="name"><![CDATA[
+    var attrdef = this._def.getAttribute(name);
+    if (attrdef==null) return;
+    if (attrdef.mandatory && ($(this._ref).attr(name)==null || $(this._ref).attr(name)==""))
+      throw new PsiError("PSIXML.PSI_ELEMENT_ATTRIBUTE_MANDATORY", [this.tag, name], [this, this._ref]);
+    attrdef.compute( {name: name, value: this.processValue($(this._ref).attr(name)), tag: this.tag, ref: this} );
+  ]]></Method>
+  
+  <Method name="validAllAttr" arguments=""><![CDATA[
+    for(var i in this._def.mandatoryAttributes){
+      var nameAttr = this._def.mandatoryAttributes[i];
+      if (this._ref.attributes.getNamedItem(nameAttr)==null)
+        throw new PsiError("PSIXML.PSI_ELEMENT_ATTRIBUTE_MANDATORY", [this.tag, nameAttr], [this, this._ref]);
+    }
+    for(var i in this._ref.attributes)
+      this.validAttr(this._ref.attributes[i].name);
+  ]]></Method>
+  
+  <Method name="removeAttr" arguments="name"><![CDATA[
+    if (this._def.mandatoryAttributes.indexOf(name)!=-1)
+      throw new PsiError("PSIXML.PSI_ELEMENT_ATTRIBUTE_REMOVE_MANDATORY", [this.tag, name], [this, this._def]);
+    $(this._ref).removeAttr(name);
+  ]]></Method>
+  
+  <Method name="text" arguments="newValue"><![CDATA[
+    if (newValue!=null){
+      var pval = this.processValue(newValue);
+      $(this._ref).text(newValue);
+      return pval;
+    }
+    return this.processValue( $(this._ref).text() );
+  ]]></Method>
+  
+  <Method name="data" arguments="key, value"><![CDATA[
+    if ($.isPlainObject(key)){ 
+      this._data = $.extend(true, this._data, key);
+      return this._data;
+    }
+    if (value) this._data[key]=value; 
+    return this._data[key];
+  ]]></Method>
+  
+  <Method name="find" arguments="selector"><![CDATA[
+    var search = $(this._ref).find(selector);
+    switch (search.size()){
+      case 0: return null;
+      case 1: return search.get(0)._ref;
+      default:
+        var map = new Array();
+        search.each(function(){
+          if (this._ref!=null) 
+            map.push(this._ref);
+        });
+        return map; 
+    } 
+  ]]></Method>
+  
+  <Method name="addChild" arguments="element"><![CDATA[
+    this.children[element.uid] = element;
+    this.onAddChild(element.uid, element);
+    return this.children[element.uid];
+  ]]></Method>
+  
+  <Method name="removeChild" arguments="element"><![CDATA[
+    if ($.isEmptyObject(this.children)) return;
+    if (element._psixml && this.children[element.uid]) 
+      this.children[element.uid].remove(); 
+    else if ($.type(element)==="string" && this.children[element]) 
+      this.children[element].remove();
+    else if ($.type(element)==="boolean" && element==true)
+      for(var id in this.children)
+        this.children[id].remove();
+  ]]></Method>
+  
+  <Method name="remove" arguments=""><![CDATA[
+    this.removeChild(true);
+    this.onRemove();
+    //Eliminar objeto de contexto
+    if (this._def.STRUCTURE.SEND_CONTEXT && this.context && this.context.remove)
+      this.context.remove(this.id());
+    //Eliminar elemento Psi
+    $(this._ref).remove();
+    //Eliminar data asociados
+    if (this._dataRemove)
+      for(var i in this._data){
+        if (this._data[i].jquery!=null)
+          this._data[i].remove();
+        delete this._data[i];
+      }
+    delete this.parent.children[this.uid];
+  ]]></Method>
+  
+  <Method name="createElement" arguments="nodeName" trycatch="false"><![CDATA[
+    return this.program.createElement(nodeName);
+  ]]></Method>
+  
+  <Method name="parseElement" arguments="newElement" trycatch="false"><![CDATA[
+    return this.program.parseElement(newElement, this);
+  ]]></Method>
+  
+  <Method name="toStringWithAttributes" arguments="" trycatch="false"><![CDATA[
+    var attributes = new Array();
+    for(var i=0; i<this._ref.attributes.length; i++) {
+      var attr = this._ref.attributes[i], 
+          attrdef = this._def.getAttribute(attr.name); 
+      attributes.push((attrdef && attrdef.mandatory? '*': '')+attr.name+(attrdef && attrdef.defaultValue? '[default:'+attrdef.defaultValue+']': '')+"="+attr.value);
+    }
+    return this.toString()+"(tag=" + this.tag + ", attributes={" + attributes + "})";
+  ]]></Method>
+</Class>
+
+  
+
+
+<Class id="program" arguments="name, language, options, context">
+  <Property name="_sequenceUID" default="1"/>
+  <Property name="scanner" default="null"/>
+  <Property name="parser" default="null"/>
+  <Property name="object" default="null"/>
+  <Property name="language" default="null"/>
+  <Property name="trash" default="null"/>
+  <Property name="state" default="this._init(name, language, options, context)"/>
+  
+  <Method name="_init" arguments="name, language, options, context"><![CDATA[
+    this.name = name;
+    this.language = language;
+    this.parserClass = this.language.parserClass;
+    this.options = options;
+    this.context = context;
+    this.trashExecute = new Trash(this);
+    this.trashCompiler = new Trash(this);
+    this.object = null;
+    this.objectsTable = {};
+    this.objectsTags = {};
+    this.objectsIds = {};
+    this.context = context;
+    this.state = ProgramState.INIT;
+    PSIDEBUG("PSIXML.PROGRAM_INIT", [this.toDebug()]);
+    return ProgramState.INIT;
+  ]]></Method>
+  
+  <Method name="_scanner" arguments="" trycatch="false"><![CDATA[
+    if (this.state == ProgramState.INIT) {
+      this.state = ProgramState.SCANNER;
+      PSIDEBUG("PSIXML.PROGRAM_SCANNER", [this.toDebug()]);
+      var scanner = new Scanner(this, this.options);
+      this.source = scanner.execute();
+      this.rootDocument = this.source.documentElement;
+      this.rootName = this.source.documentElement.nodeName;
+    }
+  ]]></Method>
+  
+  <Method name="_parse" arguments="" trycatch="false"><![CDATA[
+    this.state = ProgramState.PARSE;
+    PSIDEBUG("PSIXML.PROGRAM_PARSE", [this.toDebug()]);
+    this.parse = new this.parserClass();
+    this.parse.init(this);
+    return this.parse.parseProgram(this.context);
+  ]]></Method>
+  
+  <Method name="_error" arguments="e" trycatch="false"><![CDATA[
+    this.state = ProgramState.ERROR;
+    if (e && e.stop===true) throw e;
+  ]]></Method>
+  
+  <Method name="_run" arguments="" trycatch="false"><![CDATA[
+    if (this.state==ProgramState.STOP) return null;
+    this.state = ProgramState.RUN;
+    PSIDEBUG("PSIXML.PROGRAM_RUN", [this.toDebug()]);
+    this.url = this.source ? this.source.URL : "Source String";
+    return this.object;
+  ]]></Method>
+  
+  <Method name="_stop" arguments=""><![CDATA[
+    this.object.stop();
+    this.state = ProgramState.STOP;
+    PSIDEBUG("PSIXML.PROGRAM_STOP", [this.toDebug()]);
+  ]]></Method>
+  
+  <Method name="getUID" arguments="tag" trycatch="false"><![CDATA[
+    return this.name + "-" + tag + "-" + (this._sequenceUID++ / 100000).toString().substr(2);
+  ]]></Method>
+  
+  <Method name="execute" arguments="context" trycatch="false"><![CDATA[
+    try {
+      this.context = context;
+      this._scanner();
+      this._parse();
+      this._run();
+    }
+    catch (e) {
+      this._error(e);
+    }
+    return this.object;
+  ]]></Method>
+  
+  <Method name="addObject" arguments="obj"><![CDATA[
+    this.objectsTable[obj.uid] = obj;
+    this.objectsIds[obj.id()] = obj;
+    if (!this.objectsTags[obj.tag]) 
+      this.objectsTags[obj.tag] = {};
+    if (obj.id()) 
+      this.objectsTags[obj.tag][obj.id()] = obj;
+  ]]></Method>
+  
+  <Method name="getObjectByTag" arguments="id, implementation" trycatch="false"><![CDATA[
+    if (this.objectsTags[tag] && this.objectsTags[tag][id]) 
+      return this.objectsTags[tag][id];
+    return null;
+  ]]></Method>
+  
+  <Method name="getObjectByUID" arguments="uid" trycatch="false"><![CDATA[
+    return this.objectsTable[uid];
+  ]]></Method>
+  
+  <Method name="toXml" arguments=""><![CDATA[
+    return (this.source)
+          ? (this.source.xml || (new XMLSerializer()).serializeToString(this.source))
+          : PsiText.get("PSIXML.DOCUMENT_NO_ADDED", [this.toDebug()]);
+  ]]></Method>
+  
+  <Method name="createElement" arguments="nodeName" trycatch="false"><![CDATA[
+    return this.source.createElement(nodeName);
+  ]]></Method>
+  
+  <Method name="parseElement" arguments="newElement, _parent"><![CDATA[
+    var parent = _parent==null
+               ? this.rootDocument
+               : $.type(_parent)==="string" 
+                  ? $(_parent, this.source).get(0) 
+                  : _parent.jquery!=null
+                    ? _parent.get(0)
+                    : _parent._psixml!=null
+                      ? _parent._ref
+                      : _parent;
+    if (parent) {
+      var psiId = $(newElement).attr("psi-id");
+      if (psiId) {
+        $(newElement).removeAttr("psi-id");
+        $(parent).append(newElement); 
+        return this.parse.parseElementBy(psiId, newElement.jquery!=null ? newElement.get(0) : newElement, parent._ref, this.context);
+      }
+    }
+    return null;
+  ]]></Method>
+  
+  <Method name="toDebug" arguments="newElement, selector" trycatch="false"><![CDATA[
+    return "Program(language=" + this.language.ALIAS + ", name=" + this.name + ", state=" + this.state + ")";
+  ]]></Method>
+</Class>
+  
+
+
+  
+<Class id="trash" arguments="program" >
+  <Property name="map" default="{}"/>
+  <Property name="program" default="program"/>
+  
+  <Method name="add" arguments="element"><![CDATA[
+    if (element != null) {
+      PSIDEBUG("PSIXML.TRASH_ADD_ELEMENT", [element.tag]);
+      this.map[element.uid] = element;
+      return element.uid;
+    }
+  ]]></Method>
+  
+  <Method name="get" arguments="uid"><![CDATA[
+    return this.map[uid];
+  ]]></Method>
+  
+  <Method name="remove" arguments="uid"><![CDATA[
+    if (this.map[uid])
+      try {
+        this.map[uid].destroy();
+        delete this.map[index];
+      }
+      catch (e) {
+        throw new PsiError("PSIXML.TRASH_REMOVE_ERROR", [e.message], [this, e]);
+      }
+  ]]></Method>
+  
+  <Method name="kill" arguments="uid"><![CDATA[
+    if (this.map[uid]) 
+      delete this.map[index];
+  ]]></Method>
+  
+  <Method name="clean" arguments="uid"><![CDATA[
+    for (var uid in this.map)
+      this.kill(uid);
+  ]]></Method>
+</Class>
+
+
+</ModelImplementationPsi>

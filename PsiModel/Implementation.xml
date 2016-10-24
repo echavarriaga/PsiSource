@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelImplementationPsi>
+
+<Texts id="mipsi_messages">
+  <Language key="ES" name="Spanish">
+    <Text key="DEBUG_INCLUDE_EXIST">Ya existe Implementación con alias '$1'. No se incluirá nuevamente</Text>
+  </Language>
+</Texts>
+
+  
+<Class id="programming_element" arguments="">
+  <Validator element-key="var" id="*identifier"/>
+  <Validator element-key="enum" id="*identifier"/>
+  <Validator element-key="script" id="*identifier"/>
+  <Validator element-key="function" id="*identifier" arguments="text"/>
+  <Validator element-key="object" id="*identifier"/>
+  <Validator element-key="class" id="*identifier" arguments="text" init="text"/>
+  <Validator element-key="widget" id="*identifier"/>
+  <Validator element-key="parser" id="*identifier" arguments="text"/>
+  <Validator element-key="component" id="*identifier"/>
+  <Validator element-key="component_psi" id="*identifier"/>
+  
+  <Property name="members" default="{}"/>
+  <Property name="validators" default="{}"/>
+  <Property name="properties" default="{}"/>
+  <Property name="methods" default="{}"/>
+  <Property name="events" default="{}"/>
+  <Property name="statics" default="{}"/>
+  <Property name="notes" default="{}"/>
+      
+  <Event name="onInit"><![CDATA[
+    switch(this.tag){
+      case "Var": 
+      case "Script": 
+      case "Function": 
+        break;
+        
+      case "Enum": 
+        this.members = {};
+        this.getMember = function(name) { return this.members[name]; };
+        break;
+        
+      case "Object": 
+      case "Class":
+      case "Widget": 
+      case "Parser":
+      case "Component": 
+      case "ComponentPsi":
+        this.properties = {};
+        this.getProperty = function(name) { return this.properties[name]; }
+        this.methods = {};
+        this.getMethod = function(name) { return this.methods[name]; }
+        if (this.tag=="Class" || this.tag=="Parser" || this.tag=="Widget"){
+          this.events = {};
+          this.getEvent = function(name) { return this.events[name]; }
+        }
+        if (this.tag=="Class") {
+          this.statics = {};
+          this.getStatic = function(name) { return this.statics[name]; }
+          this.validators = {};
+          this.getValidator = function(name) { return this.validators[name]; }
+        }
+        if (this.tag=="Widget"){
+          this.options = {};
+          this.getOption = function(name) { return this.options[name]; }
+        }
+        break;
+    }
+	]]></Event>
+</Class>
+
+  
+<Class id="member" arguments="">
+  <Validator element-key="member" name="*identifier" value="*text"/>
+  
+  <Method name="name" arguments="" trycatch="false"><![CDATA[
+    return this.attr("name");    
+  ]]></Method>
+
+  <Method name="value" arguments="" trycatch="false"><![CDATA[
+    return this.attr("value");
+  ]]></Method>
+</Class>
+  
+  
+<Class id="property" arguments="">
+  <Validator element-key="property" name="*identifier" default="text"/>
+  
+  <Method name="name" arguments="" trycatch="false"><![CDATA[
+    return this.attr("name");    
+  ]]></Method>
+</Class>
+  
+  
+<Class id="option" arguments="">
+  <Validator element-key="option" name="*identifier"/>
+  
+  <Method name="name" arguments="" trycatch="false"><![CDATA[
+    return this.attr("name");    
+  ]]></Method>
+</Class>  
+
+
+<Class id="validator" arguments="">
+  <Method name="get" arguments=""><![CDATA[
+    //Crear validador para el elemento
+    var result = "", attributes = this._ref.attributes;
+    for(var i=0; i<attributes.length; i++){
+      if (attributes[i].name=="element-key") continue;
+      var attr = attributes[i], 
+          m = attr.value[0]=='*', 
+          s = attr.value.substr(m ? 1:0),
+          d = s[0]=="=" ? s.substr(1, s.indexOf("|")-1) : null;
+      result += (m ? "*" : "") + attr.name + (d ? "="+d : "") + ":" + (d ? s.substr(s.indexOf("|")+1) : s);
+      if (i<attributes.length-1) result += "|";
+    } 
+    return result;  
+  ]]></Method>
+  
+	<Method name="key" arguments=""><![CDATA[
+    return this.attr("element-key");    
+  ]]></Method>
+</Class>
+
+
+<Class id="method" arguments="">
+  <Validator element-key="method" name="*identifier" arguments="text" trycatch="text"/>
+  <Validator element-key="static" name="*identifier" trycatch="text"/>
+  <Validator element-key="event" name="*identifier" arguments="text" trycatch="text"/>
+  <Validator element-key="initialize" name="*identifier" trycatch="text"/>
+  
+  <Method name="name" arguments="" trycatch="false"><![CDATA[
+    return this.attr("name");    
+  ]]></Method>
+
+  <Method name="arguments" arguments="" trycatch="false"><![CDATA[
+    return this.attr("arguments");
+  ]]></Method>
+</Class>
+  
+  
+<Class id="texts" arguments="">
+  <Validator element-key="texts" id="*identifier"/>
+  <Property name="languages" default="{}"/>
+</Class>
+
+<Class id="language" arguments="">
+  <Validator element-key="language" key="*text" name="text"/>
+  <Property name="texts" default="{}"/>
+</Class>
+
+<Class id="text" arguments="">
+  <Validator element-key="text" key="*text"/>
+</Class>
+
+<Class id="note" arguments="">
+  <Validator element-key="note" key="*text"/>
+</Class>
+
+<Class id="model_implementation_psi" arguments="">
+  <Validator element-key="model_implementation_psi" description="text"/>
+  <Property name="map" default="{}"/>
+  <Property name="texts" default="{}"/>
+  <Property name="vars" default="{}"/>
+  <Property name="enums" default="{}"/>
+  <Property name="scripts" default="{}"/>
+  <Property name="functions" default="{}"/>
+  <Property name="objects" default="{}"/>
+  <Property name="classes" default="{}"/>
+  <Property name="widgets" default="{}"/>
+  <Property name="components" default="{}"/>
+  <Property name="componentsPsi" default="{}"/>
+  <Property name="parsers" default="{}"/>
+  <Property name="notes" default="{}"/>
+
+  <Method name="getTexts" arguments="id" trycatch="false"><![CDATA[
+    return this.texts[id];
+  ]]></Method>
+
+  <Method name="getVar" arguments="id" trycatch="false"><![CDATA[
+    return this.vars[id];
+  ]]></Method>
+
+  <Method name="getEnum" arguments="id" trycatch="false"><![CDATA[
+    return this.enums[id];
+  ]]></Method>
+
+  <Method name="getScript" arguments="id" trycatch="false"><![CDATA[
+    return this.scripts[id];
+  ]]></Method>
+
+  <Method name="getFunction" arguments="id" trycatch="false"><![CDATA[
+    return this.functions[id];
+  ]]></Method>
+
+  <Method name="getObject" arguments="id" trycatch="false"><![CDATA[
+    return this.objects[id];
+  ]]></Method>
+
+  <Method name="getClass" arguments="id" trycatch="false"><![CDATA[
+    return this.classes[id];
+  ]]></Method>
+  
+  <Method name="getWidget" arguments="id" trycatch="false"><![CDATA[
+    return this.widgets[id];
+  ]]></Method>
+
+  <Method name="getComponent" arguments="id" trycatch="false"><![CDATA[
+    return this.components[id];
+  ]]></Method>
+
+  <Method name="getComponentPsi" arguments="id" trycatch="false"><![CDATA[
+    return this.componentsPsi[id];
+  ]]></Method>
+  
+  <Method name="getParser" arguments="id" trycatch="false"><![CDATA[
+    return this.parsers[id];
+  ]]></Method>
+</Class>
+  
+  
+<Parser id="model_implementation_parser" arguments="">
+  <Event name="onInit" trycatch="false"><![CDATA[
+    //* Implementation event
+	]]></Event>
+
+  <Event name="onErrorParseElement" arguments="newElement, error" trycatch="false"><![CDATA[
+    //* Implementation event
+    return false;
+  ]]></Event>
+</Parser>
+
+
+<ComponentPsi id="mipsi">
+  <Initialize name="InitMIPsi" trycatch="false"><![CDATA[
+  ]]></Initialize>
+</ComponentPsi>
+
+
+</ModelImplementationPsi>

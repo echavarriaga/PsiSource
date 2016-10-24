@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelPsi name="Model Implementation Psi" include-header="yes" version="1.0" acronym="MIPsi" 
+          description="Modelo de implementación para generación de código">
+
+<Implementation alias="Base" url="psi/languages/mpsi/Base.xml"/>
+<Implementation alias="Elements" url="psi/languages/mpsi/Elements.xml"/>
+<Implementation alias="ComponentPsi" url="psi/languages/mpsi/ComponentPsi.xml"/>
+<Implementation alias="Models" url="psi/languages/mpsi/Models.xml"/>
+
+
+<Implementation alias="Implementation" url="psi/languages/mpsi/Implementation.xml"/>
+
+<ComponentPsi id="mipsi" name="MIPsi" public="yes" implementation="Implementation" description="Models JavaScript Psi">
+	<Texts id="mipsi_messages" name="MIPSI_MESSAGES" implementation="Implementation" description="Mensajes de depuración de MIPsi"/>
+  
+	<Class id="programming_element" name="ProgrammingElement" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="Elemento de pragramación Psi">
+	  <Properties validators="Lista de validadores" properties="Lista de propiedades" methods="Lista de métodos" 
+	              events="Lista de eventos" statics="Lista de propiedades estáticas"/>
+	  <Events onInit="Iniciar el elemento de programación Psi" />
+	</Class>
+  
+  <Class id="property" name="Property" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="Definición de una propiedad Psi">
+		<Methods name="Obtiene el nombre de la propiedad"/>
+	</Class>
+  
+  <Class id="option" name="Option" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="Definición de una opción jQuery">
+		<Methods name="Obtiene el nombre de la opción"/>
+	</Class>
+  
+  <Class id="validator" name="Validator" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="Definición de un validador Psi">
+    <Methods get="Obtener texto de validación para campos Psi"
+             key="Obtiene de la llapara para el elemento de programación Psi"/>
+  </Class>
+		
+	<Class id="method" name="Method" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="Definición de un método Psi">
+		<Methods name="Obtiene el nombre del método"
+		         arguments="Obtiene los argumentos del método"/>
+	</Class>
+	
+	<Class id="texts" name="Texts" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="Obtiene los textos por idioma">
+    <Properties languages="Lista de lenguajes de definición"/>	
+	</Class>
+	<Class id="language" name="Language" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="Define un lenguaje para los mensajes">
+    <Properties texts="Lista de textos"/>	
+	</Class>
+	<Class id="text" name="Text" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="Define un lenguaje para los mensajes"/>
+	
+
+  <Class id="model_implementation_psi" public="yes" name="ModelImplementationPsi" inherits="PsiXML.PsiElement" implementation="Implementation" description="Herramientas basadas en PsiXML, WPsi">
+    <Properties map="Lista de elementos de programación psi implementados" texts="Lista de textos" vars="Lista de variables" scripts="Lista de scripts"
+                functions="Lista de funciones" objects="Lista de objetos" classes="Lista de clases" widgets="Lista de widgets" components="Lista de componentes"
+                componentsPsi="Lista de componentes Psi" parsers="Lista de analizadores Psi"/>
+    <Methods getTexts="Obtiene lista de textos"
+		         getVar="Obtener implementación de variable Psi"
+		         getScript="Obtener implementación de script Psi"
+		         getFunction="Obtener implementación de función Psi"
+		         getObject="Obtener implementación de objeto Psi"
+		         getClass="Obtener implementación de clase Psi"
+		         getWidget="Obtener implementación del widget jQuery"
+		         getComponent="Obtener implementación de componente"
+		         getComponentPsi="Obtener implementación de componente Psi"
+		         getParser="Obtener implementación de analizador Psi"/>
+	</Class>
+	<Parser id="model_implementation_parser" name="ModelImplementationPsiParser" implementation="Implementation">
+		<Events onInit="Iniciar parser de extensiones de gráficos" 
+		        onErrorParseElement="Despues de creado un elemento" />
+	</Parser>
+	
+	
+	<Structure id="structure_mipsi" root="model_implementation_psi">
+		<Element key="model_implementation_psi" root="yes" tag="ModelImplementationPsi" class-id="model_implementation_psi">
+      <Child id="100" ref="texts" tag="Texts" multiplicity="0..n" property="texts"/>
+      <Child id="101" ref="var" tag="Var" multiplicity="0..n" property="vars"/>
+      <Child id="102" ref="script" tag="Script" multiplicity="0..n" property="scripts"/>
+      <Child id="103" ref="function" tag="Function" multiplicity="0..n" property="functions"/>
+      <Child id="104" ref="object" tag="Object" multiplicity="0..n" property="objects"/>
+      <Child id="105" ref="class" tag="Class" multiplicity="0..n" property="classes"/>
+      <Child id="106" ref="widget" tag="Widget" multiplicity="0..n" property="widgets"/>
+      <Child id="107" ref="component" tag="Component" multiplicity="0..n" property="components"/>
+      <Child id="108" ref="component_psi" tag="ComponentPsi" multiplicity="0..n" property="componentsPsi"/>
+      <Child id="109" ref="parser" tag="Parser" multiplicity="0..n" property="parsers"/>
+    </Element>
+    
+    		
+		<Element key="texts" tag="Texts" class-id="texts">
+      <Child id="110" ref="language" tag="Language" multiplicity="1..n" property="languages"/>
+		</Element>
+		<Element key="language" tag="Language" class-id="language">
+      <Child id="111" ref="text" tag="Text" multiplicity="1..n" property="texts"/>
+		</Element>
+		<Element key="text" tag="Text" class-id="text"/>
+		
+    <Element key="var" tag="Var" class-id="programming_element"/>
+		<Element key="script" tag="Script" class-id="programming_element"/>
+		<Element key="function" tag="Function" class-id="programming_element"/>
+		<Element key="object" tag="Object" class-id="programming_element">
+      <Child id="112" ref="property" tag="Property" multiplicity="0..n" property="properties" index="name()"/>
+      <Child id="113" ref="method" tag="Method" multiplicity="0..n" property="methods" index="name()"/>
+		</Element>
+		<Element key="class" tag="Class" class-id="programming_element">
+      <Child id="114" ref="validator" tag="Validator" multiplicity="0..n" property="validators" index="key()"/>
+      <Child id="115" ref="property" tag="Property" multiplicity="0..n" property="properties" index="name()"/>
+      <Child id="116" ref="method" tag="Method" multiplicity="0..n" property="methods" index="name()"/>
+      <Child id="117" ref="event" tag="Event" multiplicity="0..n" property="events" index="name()"/>
+      <Child id="118" ref="static" tag="Static" multiplicity="0..n" property="statics" index="name()"/>
+		</Element>
+    <Element key="widget" tag="Widget" class-id="programming_element">
+      <Child id="119" ref="option" tag="Option" multiplicity="0..n" property="options" index="name()"/>
+      <Child id="120" ref="property" tag="Property" multiplicity="0..n" property="properties" index="name()"/>
+      <Child id="121" ref="method" tag="Method" multiplicity="0..n" property="methods" index="name()"/>
+      <Child id="122" ref="event" tag="Event" multiplicity="0..n" property="events" index="name()"/>
+		</Element>
+		<Element key="parser" tag="Parser" class-id="programming_element">
+      <Child id="123" ref="property" tag="Property" multiplicity="0..n" property="properties" index="name()"/>
+      <Child id="124" ref="method" tag="Method" multiplicity="0..n" property="methods" index="name()"/>
+      <Child id="125" ref="event" tag="Event" multiplicity="0..n" property="events" index="name()"/>
+		</Element>
+		<Element key="component" tag="Component" class-id="programming_element">
+      <Child id="126" ref="property" tag="Property" multiplicity="0..n" property="properties" index="name()"/>
+      <Child id="127" ref="method" tag="Method" multiplicity="0..n" property="methods" index="name()"/>
+      <Child id="128" ref="initialize" tag="Initialize" multiplicity="0..1" property="initialize"/>
+		</Element>
+		<Element key="component_psi" tag="ComponentPsi" class-id="programming_element">
+      <Child id="129" ref="property" tag="Property" multiplicity="0..n" property="properties" index="name()"/>
+      <Child id="130" ref="method" tag="Method" multiplicity="0..n" property="methods" index="name()"/>
+      <Child id="131" ref="initialize" tag="Initialize" multiplicity="0..1" property="initialize"/>
+		</Element>
+		
+		<Element key="property" tag="Property" class-id="property"/>
+		<Element key="option" tag="Option" class-id="option"/>
+		<Element key="validator" tag="Validator" class-id="validator"/>
+		<Element key="method" tag="Method" class-id="method"/>
+		<Element key="static" tag="Static" class-id="method"/>
+		<Element key="event" tag="Event" class-id="method"/>
+		<Element key="initialize" tag="Initialize" class-id="method"/>
+	</Structure>
+</ComponentPsi>
+</ModelPsi>

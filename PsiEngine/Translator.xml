@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelImplementationPsi>
+
+
+<Class id="scanner" arguments="program, options">
+  <Property name="program" default="program"/>
+  <Property name="options" default="options"/>
+  
+  <Method name="_load" arguments="url, data, type"><![CDATA[
+    var source = loadXMLSync(url, data, {type: type ? type : "GET"});
+    PSIDEBUG("PSIXML.SCANNER_DOCUMENT_LOADED", [this.program.toDebug(), url]);
+    return source;
+  ]]></Method>
+  
+  <Method name="_string" arguments="sourceString"><![CDATA[
+    var source = $.parseXML(sourceString);
+    PSIDEBUG("PSIXML.SCANNER_DOCUMENT_SOURCE_STRING", [this.program.toDebug()]);
+    return source;
+  ]]></Method>
+  
+  <Method name="execute" arguments="" trycatch="false"><![CDATA[
+    if (this.options.url)
+      return this._load(this.options.url, this.options.data, this.options.type);
+    else if (this.options.source)
+      return this._string(this.options.source);
+    else if (this.options.document)
+      return PsiData.document.get(this.options.document);
+    else if  (this.options.xml && $.isXMLDoc(this.options.xml))
+      return this.options.xml;
+    throw new PsiError("PSIXML.SCANNER_NOT_PROGRAM",[this.program.toDebug()],[this]);
+  ]]></Method>
+</Class>
+
+
+
+<Class id="parser">
+  <Event name="onInit" arguments=""></Event>
+  <Event name="onFinish" arguments=""></Event>
+  <Event name="onNewElement" arguments="elementId, newElement, context"></Event>
+  <Event name="onChildrenCreated" arguments="elementId, newElement, context"></Event>
+  <Event name="onAddChild" arguments="elementId, newElement, newChild, context"></Event>
+  <Event name="onContinueParse" arguments="elementId, newElement"> return true; </Event>
+
+  <Method name="init" arguments="program" trycatch="false"><![CDATA[
+    this.program = program;
+    this.language = this.program.language;
+    this.onInit();
+  ]]></Method>
+  
+  <Method name="parseElementBy" arguments="elementId, reference, parent, context" trycatch="false"><![CDATA[
+    var newElement = null;
+    try {
+      newElement = this.language.createElement(elementId, reference, parent, this.program, context);
+      PSIDEBUG("PSIXML.PARSE_ELEMENT", [this.toDebug(), newElement.toStringWithAttributes()]);
+      
+      //Add element parent
+      if (parent != null) 
+        parent.addChild(newElement);
+      else 
+        this.program.object = newElement;
+      
+      //Validar nuevo elmento del Lenguaje Psi y su estructura de elementos hijos
+      newElement.validAllAttr();
+      newElement._def.validChildren($(reference).children());
+      
+      //Adicionar objeto a la table de elementos del program Psi
+      this.defineProperties(newElement);
+      this.program.addObject(newElement); 
+      this.onNewElement(elementId, newElement, context);
+      
+      //Gets children elements
+      var CHILDREN = newElement._def.STRUCTURE.CHILDREN; 
+      if (CHILDREN) {
+        var self = this;
+        $(reference).children().each(function () {
+          if (CHILDREN[this.tagName]) {
+            var newChild = self.parseElementBy(CHILDREN[this.tagName], this, newElement, context);
+            self.onAddChild(elementId, newElement, newChild, context);
+          }
+        });
+      }
+      this.onChildrenCreated(elementId, newElement, context);
+      newElement.onChildrenCreated(context);
+      return newElement;
+    }
+    catch (e) {
+      if (e && e.stop===true) throw e;
+      if (newElement)
+        newElement.parseError = e;
+      if (this.onContinueParse(elementId, newElement)){
+        this.program.trashCompiler.add(newElement);
+        new PsiError("PSIXML.PARSE_WARNING", [this.toDebug(), elementId, e.message], [newElement, e]);
+      }
+      else{
+        e.stop = true;
+        throw e;
+      }
+    }
+    return null;
+  ]]></Method>
+  
+  <Method name="parseProgram" arguments="context" trycatch="false"><![CDATA[
+    try {
+      PSIDEBUG("PSIXML.PARSE_INIT", [this.toDebug()]);
+      this.parseElementBy(this.language.GRAMMAR.ROOT, this.program.rootDocument, null, context);
+      PSIDEBUG("PSIXML.PARSE_FINNISH", [this.toDebug()]);
+      this.onFinish(this.program.object, context);
+    }
+    catch (e) {
+      this.program.parseError = new PsiError("PSIXML.PARSE_ERROR", [this.program.name, e.message], [this.program, e]);
+      this.program.parseError.stop = true;
+      throw this.program.parseError;
+    }
+  ]]></Method>
+  
+  <Method name="toDebug" arguments=""><![CDATA[
+    return "Parser(language=" + this.language.ALIAS + ", program=" + this.program.name + ")";
+  ]]></Method>
+</Class>
+
+
+</ModelImplementationPsi>

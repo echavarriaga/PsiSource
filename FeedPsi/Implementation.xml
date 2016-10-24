@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelImplementationPsi>
+
+
+<Texts id="feedpsi_messages">
+  <Language key="ES" name="Spanish">
+    <Text key="ERROR_RSS">Error del servicio RSS: '$1'. Mensaje: '$2'</Text>
+  </Language>
+</Texts>
+
+
+<Object id="user_interface">
+  <Note key="this"><![CDATA[
+  ]]></Note>
+  
+  <Property name="template" default="null"/>
+  <Property name="fragments" default="null"/>
+
+  <Method name="init" arguments="context"><![CDATA[
+    PsiData.document.register("template", context.template);
+    this.template = PsiData.document.get("template");
+    //Agregar Scripts
+    var self = this;
+    this.fragments = {};
+    $("Fragment", this.template).each(function(){
+      self.fragments[$(this).attr("id")] = { 
+        interface: $(this).find("Interface").text(),
+        script: new Function("interface", "psi", $(this).find("Script").text())
+      };
+    });
+  ]]></Method>
+
+  <Method name="processInterface" arguments="id, parent, type, element"><![CDATA[
+    var fragment = this.fragments[id],
+        interface = $( fragment.interface );
+    if (type && parent)
+      interface[type](parent);
+    fragment.script(interface, element);
+    return interface;
+  ]]></Method>
+</Object>
+
+
+<Enum id="view_news_type">
+  <Member name="Complete" value="'complete'" description="Display news complete"/>
+  <Member name="Titular" value="'titular'" description="Display headline of the news"/>  
+</Enum>
+
+  
+<Class id="news" arguments="">
+  <Validator element-key="news" id="*identifier" title="*text"/>
+  
+  <Event name="onInit" arguments=""><![CDATA[
+    this._build();
+  ]]></Event>
+
+  <Method name="_build" arguments=""><![CDATA[
+    //Eliminar interface anterior
+    if (this.interface)
+      this.interface.remove();
+        
+    //Crear según ubicación: ViewNews / Category   
+    this.rss = this.root.rss[this.attr("rssId")];
+    this.interface = UserInterface.processInterface("news-"+this.parent.viewType, this.parent.content, "prependTo", this);
+  ]]></Method>
+
+  <Method name="change" arguments="parent"><![CDATA[
+    this.parent = parent;
+    $(this._ref).prependTo(parent._ref);
+    this._build();
+  ]]></Method>
+</Class>
+
+
+<Class id="panel_news" arguments="">
+  <Property name="interface" default="null"/>
+  <Property name="content" default="null"/>
+
+  <Method name="addNews" arguments="news"><![CDATA[
+    this.news[news.id()] = news;
+    news.change(this);
+  ]]></Method>
+
+
+  <Method name="deleteNews" arguments="id"><![CDATA[
+    if (this.news[id]){
+      this.news[id].interface.remove();
+      delete this.news[id];
+    };
+  ]]></Method>
+
+  <Method name="existNews" arguments="id"><![CDATA[
+    return this.news[id]!=null;
+  ]]></Method>
+</Class>
+
+
+<Class id="category" arguments="">
+  <Validator element-key="category" id="*identifier" title="*text(My Category)"/>
+  <Property name="viewType" default="ViewNewsType.Titular"/>
+  <Property name="news" default="{}"/>
+
+  <Event name="onInit" arguments=""><![CDATA[
+    this.interface = UserInterface.processInterface("category", $("#categories-menu-items", this.parent.interface), "appendTo", this);
+  ]]></Event>
+</Class>
+
+  
+<Class id="main_news" arguments="">
+  <Validator element-key="main_news" title="*text"/>
+  <Property name="viewType" default="ViewNewsType.Complete"/>
+  <Property name="news" default="{}"/>
+
+  <Event name="onInit" arguments=""><![CDATA[
+    this.interface = UserInterface.processInterface("main-news", $("td.viewrss-view-news", this.parent.interface), "appendTo", this);
+  ]]></Event>
+</Class>
+
+
+<Class id="rss" arguments="">
+  <Validator element-key="rss" id="*text" title="*text(My RSS)" url="*url" image="*text" limit="=10|number(5,10,15,20,50)"/>
+
+  <Event name="onInit" arguments=""><![CDATA[
+    this.interface = UserInterface.processInterface("menu-rss", $("#viewrss-menu-items", this.parent.interface), "appendTo", this);
+    this.getFeed();
+  ]]></Event>
+
+  <Method name="createNews" arguments="id, entry"><![CDATA[
+    if (!this.root.mainNews.existNews(id)) {
+      //crear nueva noticia y adicionarla a noticias principales
+      var newsElement = $(this.createElement("News")).attr({
+        id: id, "psi-id": "news", rssId: this.id(), title: entry.title, author: entry.author,
+        content: entry.content, link: entry.link, published: entry.publishedDate
+      });
+      this.root.mainNews.parseElement(newsElement);
+    }
+  ]]></Method>
+
+  <Method name="getFeed" arguments=""><![CDATA[
+    var url = "http://ajax.googleapis.com/ajax/services/feed/load?v=1.0&callback=?&" 
+            + "q="+encodeURIComponent( this.attr("url") )
+            + "&num="+this.attr("limit")
+            + (this.hasAttr("key") ? "&key="+this.attr("key") : "")  
+            + "&output=json_xml"
+    $.ajax( { url: url, dataType: 'json', rss: this} )
+      .done(function(data, textStatus, jqXHR) { 
+        if (textStatus != "success") {
+          this.rss.error(textStatus);
+          throw new PsiError("FEEDPSI.DOCUMENT_ERROR", [this.url, textStatus, jqXHR.textXML], [this, arguments]);
+        }
+        else
+          this.rss.refresh(data.responseData.feed);
+      })
+      .fail(function(jqXHR, textStatus, errorThrown) { 
+        this.rss.error(errorThrown);
+        throw new PsiError("FEEDPSI.DOCUMENT_ERROR", [this.url, errorThrown], [this, arguments]);
+      });  
+  ]]></Method>
+
+  <Method name="refresh" arguments="feed"><![CDATA[
+    this.feed = feed;
+    this.image.attr({src: this.attr("image"), title: feed.title});
+    this.date.text( (new Date()).toGMTString() );
+    this.items = UserInterface.processInterface("submenu-items", this.content.empty(), "appendTo", this);
+  ]]></Method>
+
+  <Method name="error" arguments="message"><![CDATA[
+    this.items = $("<span></span>").text(message);
+  ]]></Method>
+</Class>
+
+
+<Class id="set_of_news" arguments="">
+  <Validator element-key="set_of_news" name="*text"/>
+  <Property name="interface" default="null"/>
+  <Property name="rss" default="{}"/>
+  <Property name="categories" default="{}"/>
+  <Property name="mainNews" default="null"/>
+
+  <Event name="onInit" arguments=""><![CDATA[
+    //Iniciar Interfaz de Usuario
+    UserInterface.init(this.context);
+    //Procesar Interfaz de Usuario
+    this.interface = UserInterface.processInterface("set-of-news", this.context.section, "appendTo", this);
+  ]]></Event>
+
+  <Event name="onChildrenCreated" arguments=""><![CDATA[
+    $("#viewrss-menu-items").sortable().disableSelection();
+    $("#categories-menu-items").sortable().disableSelection();           
+  ]]></Event>
+</Class>
+
+
+<Parser id="feedpsi_parser" arguments="">
+</Parser>
+
+
+<ComponentPsi id="feed_psi">
+  <Initialize name="InitFeedPsi"><![CDATA[
+  ]]></Initialize>
+</ComponentPsi>
+
+
+</ModelImplementationPsi>

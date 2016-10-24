@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelPsi name="Noticias Feed Psi" include-header="yes" version="1.0" acronym="feed" 
+          description="Definition of Psi language and web application for manage RSS news">
+
+<Implementation alias="Implementation" url="psi/languages/feedpsi/Implementation.xml" file="Implementation.xml"/>
+ 
+<ComponentPsi id="feed_psi" name="Feed" public="yes" implementation="Implementation" description="Implementation of feed component.">
+  <Texts id="feedpsi_messages" name="FEEDPSI" implementation="Implementation" description="Handler of FeedPsi Messages"/>
+  
+  <Object id="user_interface" name="UserInterface" public="yes" implementation="Implementation" description="User interface for psi RSS service.">
+    <Properties template="Template of html fragments for user interface of web application" fragments="List of html fragments"/>
+    <Methods init="To initialize the user interface using templates html especified in template.xml file" processInterface="To process fragment of user interface"/>
+  </Object> 
+   
+  <Enum id="view_news_type" name="ViewNewsType" implementation="Implementation" description="Type of news display"/>
+  <Class id="news" name="News" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="To define a news and assign it an unique identifier">
+    <Events onInit="Initialize a news on categories or on central display"/>
+    <Methods _build="Build news depending on display type: complete (ViewNewsType.Complete) or headline (ViewNewsType.Titular)" change="Change display position: of category to central view, or vice versa"/>
+  </Class>
+  
+  <Class id="panel_news" name="PanelNews" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="To define a news panel">
+    <Properties interface="Interface of news panel" content="Contents of news panel"/>
+    <Methods addNews="Add news" deleteNews="Delete news" existNews="Indicate if there is a news on panel"/>
+  </Class>
+  
+  <Class id="category" name="Category" public="yes" inherits="PanelNews" implementation="Implementation" description="To define a news category">
+    <Properties viewType="Type of news display" news="List of news"/>
+    <Events onInit="To define a news category"/>
+  </Class>
+  <Class id="main_news" name="MainNews" public="yes" inherits="PanelNews" implementation="Implementation" description="Diplay news on central panel">
+    <Properties viewType="Type of news display" news="List of news"/>
+    <Events onInit="Initialize news"/>
+  </Class>
+
+	
+  <Class id="rss" name="RSS" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="Define an aggregator of news whose source is formated in RSS language">
+    <Events onInit="To define Psi section"/>
+    <Methods createNews="Create a news based on sub menu" getFeed="Get RSS document via AJAX" refresh="Update the news of RSS service" error="Show error when connect to service"/>
+  </Class>
+  
+  
+  <Class id="set_of_news" name="SetOfNews" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="Handling a page">
+    <Properties interface="Interface of news set" rss="List of RSS" categories="List of categories" mainNews="Main news"/>
+    <Events onInit="To initialize news set" onChildrenCreated="Create additional events to categories, menus and main news"/>
+  </Class>
+  
+  
+	<Parser id="feedpsi_parser" name="FeedPsiParser" public="yes" implementation="Implementation" description="Parser of FeedPsi language">
+	</Parser>
+	<Structure id="structure_feed_psi" root="set_of_news">
+		<Element key="set_of_news" tag="SetOfNews" root="yes" class-id="set_of_news">
+      <Child id="1" ref="rss" tag="RSS" multiplicity="1..n" property="rss"/>
+			<Child id="2" ref="category" tag="Category" multiplicity="1..n" property="categories"/>
+			<Child id="3" ref="main_news" tag="MainNews" multiplicity="1..1" property="mainNews"/>
+    </Element>
+    <Element key="rss" tag="RSS" class-id="rss"/>
+    <Element key="category" tag="Category" send-context="true" class-id="category">
+			<Child id="4" ref="news" tag="News" literal="a" multiplicity="0..n" property="news"/>
+		</Element>
+		<Element key="main_news" tag="MainNews" class-id="main_news">
+		  <Child id="5" ref="news" tag="News" literal="b" multiplicity="0..n" property="news"/>
+		</Element>
+		<Element key="news" tag="News" class-id="news"/>
+	</Structure>
+</ComponentPsi>
+	
+</ModelPsi>

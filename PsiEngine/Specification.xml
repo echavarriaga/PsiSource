@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelPsi id="model_psi" name="PsiEngine" version="3.0" acronym="psi" include-header="yes" 
+          description="Motor de Ejecución de lenguajes XML en un cliente  Web" debug="false">
+  
+  <Implementation alias="Scripts" url="psi/components/psiXml/Scripts.xml" file="Scripts.xml"/>
+  <Implementation alias="KernelPsi" url="psi/components/psiXml/KernelPsi.xml" file="KernelPsi.xml"/>
+  <Implementation alias="LanguagePsi" url="psi/components/psiXml/LanguagePsi.xml" file="LanguagePsi.xml"/>
+  <Implementation alias="Translator" url="psi/components/psiXml/Translator.xml" file="Translator.xml"/>
+  <Implementation alias="Evaluator" url="psi/components/psiXml/Evaluator.xml" file="Evaluator.xml"/>
+  <Implementation alias="PsiXML" url="psi/components/psiXml/PsiXML.xml" file="PsiXML.xml"/>
+
+  <Script id="inheritance" name="Inheritance" implementation="Scripts" description="Classical Inheritance in JavaScript"/>
+  <Script id="utils" name="Utils" implementation="Scripts" description="Utils JavaScript"/>
+
+	<Component id="psi_texts" name="PsiText" implementation="Evaluator" public="yes" description="Administration of informative messages,warnings and errors for any Psi language">
+	  <Properties setTexts="Set of text sets"/>
+	  <Methods _getObjectAndText="Get object and text of the arguments"
+	           registerSet="Register the set of texts with an alias"
+	           getSet="Get set of texts Obtener conjunto de textos"
+	           modifyLang="Modify the language of a set of texts"
+	           get="Get text of a set"
+             TEXT="" DEBUG="" ERROR="" WARNING=""/>
+    
+    <Class id="texts" name="Texts" implementation="Evaluator" description="Manage a list of texts">
+      <Properties alias="Alias" map="Map of texts" lang="Text language. The default value is 'ES'"/>
+      <Methods exist="Establish if there is text"
+               get="Get with input parameters"/>
+    </Class>
+	</Component>
+	
+  <Enum id="psi_out_type" name="PsiOutType" implementation="Evaluator" description="Output type"/>
+  <Class id="psi_out" name="PsiOut" implementation="Evaluator" inherits="Error" description="Handling Psi Message outputs">
+    <Properties type="Output type PsiOutType ('error', 'warning', 'debug')" />
+    <Statics console="Output to console" log="List of outputs" size="Size of outputs list"/>
+    <Methods _init="Initialize output message"/>
+  </Class>
+  <Class id="psi_error" name="PsiError" implementation="Evaluator" inherits="PsiOut" description="Handle Psi error"/>
+  <Class id="psi_warning" name="PsiWarning" implementation="Evaluator" inherits="PsiOut" description="Handle Psi Warning"/>
+  <Function id="psi_debug" name="PSIDEBUG" implementation="Evaluator" description="Handle Psi debug"/>
+  <Function id="psi_watch" name="PSIWATCH" implementation="Evaluator" description="Psi Watcher"/>
+  <Widget id="debugger" name="psi.debugger" implementation="Evaluator" inherits="ui.dialog" version="1.0" description="Debug" exclude="no">
+    <Options title="Title" dialogClass="CSS Classes" width="Dialog box width" height="Dialog box height" position="Dialog box position on window"/>
+    <Events _create="Create toolbar"/>
+    <Methods addOutput="Show Psi Output"
+             open="Open the Psi debug bar"
+             close="Destroy dialog box"
+             destroy="Destroy Psi debug bar"/>
+  </Widget>          
+  
+	
+  
+	<Object id="psi_data" name="PsiData" public="yes" implementation="Evaluator" description="Define Psi data objects.">
+    <Methods register="Register a new Psi data object"
+             remove="Remove a Psi data object"/>
+  </Object>
+
+	  
+	<Component id="psixml" name="PsiXML" implementation="PsiXML" public="yes" description="PsiXML evaluation engine for execution of XML languages in web clients">
+    <Methods registerLanguagePsi="Register Psi language"
+             traductor_PxmlToPobj="Translation of a Psi program to a Psi object"
+             load="Obtain by means of AJAX a document, fragment, etc. It uses every parameters of jQuery.ajax(...)"
+             loadXMLSync="Obtain by means of AJAX a synchronic XML document"
+             createModule="Create Psi module in window object"
+             createClass="Create class in a Psi module"/>
+    
+    <Texts id="psi_xml_messages" name="PSIXML" implementation="Evaluator" description="Manage of PsiXml messages"/>
+    
+    <Component id="language_psi" name="LanguagePsi" implementation="LanguagePsi" public="yes" description="Definition and registration of a Psi language">
+      <Properties languages="Map of languages registered"/>
+      <Methods register="Register Psi language"
+               get="Get a registered Psi language"
+               getAll="Get the map of registered Psi languages"
+               addValidate="Add validator to Psi language"/>
+      
+      <Object id="validator" name="Validator" implementation="LanguagePsi" description="Administration of attribute validation for any Psi language">
+        <Methods _attrToString="Return an attribute like a character string in order to handling errors"
+                 _append="Add validation"
+                 digits="Validation of digits"
+                 number="Validation of numbers with decimals"
+                 integer="Validation of integers"
+                 range="Validation of numbers rank"
+                 boolean="Validation of booleans values"
+                 identifier="Validation of identifier of DOM elements"
+                 variable="Validation of variable name"
+                 classcss="Validation of name of CSS class"
+                 select="Validation of a selection list"
+                 text="Text validation"
+                 dateTime="Validation of date and hour"
+                 dateISO="Validation of Date ISO"
+                 email="Email validation"
+                 url="Url validation"/>
+      </Object>
+    
+      <Class id="definition_attribute" name="DefinitionAttribute" implementation="LanguagePsi" description="Administration of attribute validation for any Psi language">
+        <Properties name="Attribute name" mandatory="is mandatory" defaultValue="Default value" validates="List of validators"/>
+        <Methods addValidate="Add validation to attribute"
+                 compute="Validate the attribute"
+                 getDefault="Get default value"/>
+      </Class>
+
+      <Class id="definition_element" name="DefinitionElement" implementation="LanguagePsi" description="Administration of attribute validation for any Psi language">
+        <Properties key="Key of Psi element" tag="Tag of Psi element " STRUCTURE="Structure Psi of element" 
+                    mandatoryAttributes="Array for mandatory attributes" attributes="List of attributes"/>
+        <Methods _buildingAttributes="Build the list of attributes"
+                 getAttribute="Get attribute of list of attributes defined"
+                 validChildren="Validate Psi elements which are children of a element"
+                 create="Create a new Psi element"/>
+      </Class>
+      
+      <Class id="definition_language" name="DefinitionLanguage" public="yes" implementation="LanguagePsi" description="Definition of a Psi language. It contain the list of Psi elements of language">
+        <Properties ALIAS="Alias of Psi language" GRAMMAR="Grammar of Psi language" parserClass="Name of the analyst class" 
+                    elements="Elements/Tags of Psi language"/>
+        <Methods _initElements="Initialize the list of elements of Psi language"
+                 tagsToCodeMirror="Create object of tags of language for Code Mirror"
+                 createElement="Create element to Psi language"/>
+      </Class>
+	  </Component>
+	  
+	  
+	  
+    <Class id="scanner" name="Scanner" public="yes" implementation="Translator" description="Scanner of Psi program">
+      <Properties program="Pointer to Psi program" options="Options list"/>
+      <Methods _load="Upload file with Psi language"
+               _string="Upload a Psi language of a character string"
+               execute="Execute Scanner of Psi interpreter"/>
+    </Class>
+    <Class id="parser" name="Parser" public="yes" implementation="Translator" description="Parser of Psi interpetrer for a Psi program">
+      <Events onInit="Event when the parser of a Psi program is initialized"
+              onFinish="Event when the parser of a Psi program is finished"
+              onNewElement="Event when a new Psi element is created"
+              onChildrenCreated="Event when children elements of a Psi element are created "
+              onAddChild="Event when a new psi child element is added"
+              onContinueParse="Event for determine if the analisys process must go on"/>
+      <Methods init="Initialize Parser Psi"
+               validateStructure="Validation of structure of a Psi element"
+               parseElementBy="Parse Psi element"
+               parseProgram="Parse Psi program"
+               toDebug="Information for Psi debugger"/>
+    </Class>
+    
+    
+    
+    <Class id="psi_element" name="PsiElement" public="yes" implementation="KernelPsi" description="Definition of an element for Psi Language">
+      <Properties _def="Pointer to definition of Psi element" _data="Data related to Psi element" _psixml="Pointer to PsiXML interpreter" 
+                  children="Map of children of element through UID" parent="Reference to Psi parent element"/>
+      <Events onInit="Event when Psi element is initialized"
+              onAddChild="Event when a Psi child element is added"
+              onRemove="Event when a Psi element is deleted" 
+              onChildrenCreated="Event when the creation of all children of a Psi element is finished"/>
+      <Methods _init="Initialize Psi element"
+               id="Identifier of Psi element"
+               initData="Initialize associated data model"
+               processValue="Process the value of attribute with the associated data model"
+               attr="Handle one or many attributes"
+               hasAttr="Determine if there is attribute"
+               validAttr="Validate attribute in definition Psi of element"
+               validAllAttr="Validate every attributes with 'validAttr'"
+               removeAttr="Remove an attribute"
+               remove="Remove element of Psi program"
+               text="Handle content of Psi element"
+               data="Handling of XML information into Psi element"
+               find="Return the find of Psi elements in an object"
+               addChild="Add element Psi child"
+               removeChild="Remove element Psi child"
+               createElement="Create new element within reference document"
+               parseElement="Parse element"
+               toStringWithAttributes="Return a String with list of attributes and values"/>
+    </Class>
+    <Enum id="program_state" name="ProgramState" implementation="KernelPsi" public="yes" description="Execution state of a Psi program"/>
+    <Class id="program" name="Program" public="yes" implementation="KernelPsi" description="Parser for a Psi program ">
+      <Properties _sequenceUID="Secuanciado UID. Default: 1" scanner="Pointer to Scanner" parser="Pointer to parser" 
+                  object="Psi object obtained from program" language="Pointer to language" trash="Trash of Psi program" 
+                  state="Execution state of Psi program"/>
+      <Methods _init="To initialize Psi program"
+              _scanner="Make scanner of Psi program"
+              _parse="Execute Parser of Psi program"
+              _error="Error in Psi program"
+              _run="Execute Psi program"
+              _stop="Stop Psi program"
+              getUID=" Get UID unique identificator for a Psi element"
+              execute="Excute requested Psi program"
+              addObject="Add Psi object"
+              getObjectByTag="Get Psi object through tag and identificator"
+              getObjectByUID="Get object through unique identificator"
+              toXml="Serialize in Xml the Psi program"
+              createElement="Create a new Psi element"
+              parseElement="Parse a Psi element"
+              toDebug="Information for Psi debug"/>
+    </Class>
+    <Class id="trash" name="Trash" public="yes" implementation="KernelPsi" description="Administration of trash for Psi elements of a Psi language">
+       <Properties map="Map of trash elements" program="Pointer to Psi program"/>
+       <Methods add="Add Psi elemento to trash"
+               get="Get a Psi element of trash"
+               remove="Remove Psi element of trash"
+               kill="Eliminate permanently element of Psi program"
+               clean="Clean trash of Psi program "/>
+    </Class>
+   
+    
+    <Object id="programs" name="Programs" public="yes" implementation="Evaluator" description="Definition and registry of Psi programs.">
+      <Properties map="Map of programs executed on client"/>
+      <Methods exist="Establish if there is a Psi program"
+               get="Get a Psi program"
+               all="Get all Psi programs"
+               append="Add Psi program"
+               remove="Remove Psi program"/>
+    </Object>
+	</Component>
+	
+	
+</ModelPsi>

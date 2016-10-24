@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelPsi name="ShapesPsi and AnimaPsi Languages Definitions" include-header="yes" version="1.0" acronym="anisha" 
+          description="Psi language definition and illustrative examples" debug="false">
+
+<Implementation alias="Implementation" url="psi/languages/anisha/Implementation.xml" file="Implementation.xml"/>
+
+<Function id="examples" name="Examples" implementation="Implementation" description="Defines the list of examples available"/>
+  
+<ComponentPsi id="shapes_psi" name="Shapes" public="yes" implementation="Implementation" description="Define circles anf rectangles">
+  
+  <Class id="base" name="Base" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="Abstract class to define shapes">
+    <Properties group="Definition of SVG group for a shape"/>
+    <Events onInit="Create figure"/>
+    <Methods getPoint="Get point {x,y}"
+             getOptions="Options default shape"
+             getOptionsLabel="Options default label"
+             move="Shape move to a point p"
+             paint="Abstract figure painting method"/>
+  </Class>
+  
+  <Class id="circle" name="Circle" public="yes" inherits="Base" implementation="Implementation" description="Definition of a circle">
+    <Methods paint="Circle painted on canvas SVG"/>
+  </Class>
+
+  <Class id="rectangle" name="Rectangle" public="yes" inherits="Base" implementation="Implementation" description="Definition of a retangle">
+    <Methods paint="Rectangle painted on canvas SVG"/>
+  </Class>
+  
+  <Class id="shapes" name="Shapes" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="Program body">
+    <Properties circles="Circles list" rectangles="Rectangles list"/>
+    <Events onInit="Start shapes-program"/>
+  </Class>
+  
+	<Parser id="shapespsi_parser" name="ShapesParser" public="yes" implementation="Implementation" description="Parser of ShapesPsi language">
+    <Events onFinish="Stop application to finish its evaluation"
+            onContinueParse="Stop application to errore its evaluation"/>
+	</Parser>
+  
+  
+	<Structure id="structure_shapes_psi" root="shapes">
+		<Element key="shapes" tag="Shapes" root="yes" class-id="shapes">
+      <Child id="1" ref="circle" tag="Circle" multiplicity="0..n" property="circles"/>
+			<Child id="2" ref="rectangle" tag="Rectangle" multiplicity="0..n" property="rectangles"/>
+    </Element>
+    <Element key="circle" tag="Circle" class-id="circle"/>
+    <Element key="rectangle" tag="Rectangle" class-id="rectangle"/>
+	</Structure>
+</ComponentPsi>
+  
+  
+<ComponentPsi id="anima_psi" name="Anime" public="yes" implementation="Implementation" description="Defined movement of a shape">
+  
+  <Class id="move" name="Move" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="Shape create movement">
+    <Properties shape="Reference to shape" points="List points to motion" 
+                current="Current point of the movement" lapso="Time between movement"/>
+    <Events onInit="Shape execute movement"/>
+    <Methods buildTimeout="Build timeout to move the next point"
+             run="Performing motion shape"/>
+  </Class>
+
+  <Class id="animates" name="Animates" public="yes" inherits="PsiXML.PsiElement" implementation="Implementation" description="Program body">
+    <Properties moves="Movement list"/>
+    <Events onInit="Start animate-program"/>
+  </Class>
+  
+	<Parser id="anime_parser" name="AnimeParser" public="yes" implementation="Implementation" description="Parser of AnimePsi language">
+	</Parser>
+  
+  
+	<Structure id="structure_anima_psi" root="animates">
+		<Element key="animates" tag="Animates" root="yes" class-id="animates">
+      <Child id="3" ref="move" tag="Move" multiplicity="0..n" property="moves"/>
+    </Element>
+    <Element key="move" tag="Move" class-id="move"/>
+	</Structure>
+</ComponentPsi>  
+
+  
+</ModelPsi>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelImplementationPsi>
+
+
+<Component id="psixml">
+  <Initialize name="InitPsiXML"><![CDATA[
+    //Registrar base de datos de funciones Psi
+    PsiData.register("function");
+    PsiData.register("var");
+    
+    //Registrar base de datos de documentos Psi
+    PsiData.register("document", {
+      get: function(key){
+        if ($.isPlainObject(this[key]))
+          this[key] = loadXMLSync(this[key].url, this[key].data, this[key].type);
+        return this[key];
+      },
+      register: function(key, url, data, type){
+        if (this.exist(key)) return this[key];
+        this[key] = {url: url, data: data, type: type};
+        return this[key]; 
+      }
+    });
+    
+    //Registrar base de datos de documentos Psi
+    PsiData.register("command", {
+      register: function(key, bodyDef, help, options){
+        if (this.exist(key)) return this[key];
+        var keydef = key+"--def";
+        this[keydef] = new Function("proxy", "event", "help", bodyDef); 
+        this[keydef].help = help;
+        this[keydef].default = options ? options : {};
+        //Crear comando
+        var bodyCommand = "var cmddef = this['"+keydef+"']; proxy.options = $.extend({}, cmddef.default, proxy.options);"
+                        + "return cmddef(proxy, event, cmddef.help);";
+        this[key] = new Function("proxy", "event", bodyCommand); 
+      }
+    });
+  ]]></Initialize>  
+
+  <Method name="traductor_PxmlToPobj" arguments="alias, name, options, context" trycatch="false"><![CDATA[
+    if (Programs.exist(name))
+      throw new PsiError("PSIXML.INTERPRETER_ERROR_EXIST_PROGRAM", [name], [alias, name, options]);
+    
+    // Obtener el lemguaje Psi
+    var language = LanguagePsi.get(alias),
+        program = new Program(name, language, options);
+        
+    //* Compilar y ejecutar programa Psi
+    program.execute(context);
+    if (program.state == ProgramState.RUN)
+      Programs.append(name, program);
+      
+    //* Retornar programa Psi
+    return program;   
+  ]]></Method>
+  
+  <Method name="registerLanguagePsi" arguments="alias, GRAMMAR, parserClass"><![CDATA[
+    LanguagePsi.register(alias, GRAMMAR, parserClass);    
+  ]]></Method>
+  
+  <Method name="load" arguments="url, data, _options"><![CDATA[
+    var source = null,
+        options = $.extend({}, {url: url, async: false, data: data, dataType: "text", contentType: "application/x-www-form-urlencoded; charset=utf-8"}, _options);
+    //Ejecutar llamado AJAX
+    $.ajax(options)
+      .done(function(data, textStatus, jqXHR) { 
+        if (textStatus != "success")
+          throw new PsiError("PSIXML.DOCUMENT_ERROR", [this.url, textStatus, jqXHR.textXML], [this, arguments]);
+        source = data;
+      })
+      .fail(function(jqXHR, textStatus, errorThrown) { 
+        throw new PsiError("PSIXML.DOCUMENT_ERROR", [this.url, textStatus, errorThrown], [this, arguments]);
+      });
+    return source;    
+  ]]></Method>
+  
+  <Method name="loadXMLSync" arguments="url, data, _options"><![CDATA[
+    var options = $.extend({}, {dataType: "xml", type: "GET", contentType: "application/x-www-form-urlencoded; charset=utf-8"}, _options);
+    return load(url, data, options);    
+  ]]></Method>
+  
+  <Method name="createModule" arguments="name"><![CDATA[
+    if ($.type(name)=="string") {
+      var modules = name.split("."), 
+          current = window;
+      for(var i in modules){
+        var module = modules[i];
+        if (current[module]==null) current[module] = {};
+        current = current[module];
+      }
+      return current;
+    }
+    return null;
+  ]]></Method> 
+  
+  <Method name="createClass" arguments="nameClass, constructor, properties, methods, inherits, init"><![CDATA[
+    if ($.type(nameClass)=="string" && window[nameClass]==null) {
+      var define = nameClass+" = function(" + (constructor?constructor:"") + "){ \n"
+          pm = $.extend({}, properties, methods);
+      
+      //Adicionar propiedades
+      for(var name in properties)
+        define += "this."+name+" = "+properties[name]+";\n";
+      //Adicionar init
+      if (init)
+        define += init+";";
+      define += "\n};";
+      
+      //Adicionar herencia
+      if ( $.type(inherits)=="string" )
+        define += nameClass+".inherits("+inherits+");\n";
+        
+      //Adicionar propiedades y mátodos
+      define += nameClass+".methods( pm );\n\n";
+      
+      //Crear definición de clase Psi
+      eval(define);
+    }
+  ]]></Method>
+</Component>
+
+</ModelImplementationPsi>

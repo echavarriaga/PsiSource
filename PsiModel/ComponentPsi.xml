@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelImplementationPsi>
+
+
+<Class id="component_psi" arguments="">
+  <Validator element-key="component_psi" id="*identifier" name="*identifier" implementation="*text" description="text"/>
+  <Property name="texts" default="null"/>
+  <Property name="properties" default="null"/>
+  <Property name="methods" default="null"/>
+  <Property name="vars" default="{}"/>
+  <Property name="enums" default="{}"/>
+  <Property name="scripts" default="{}"/>
+  <Property name="functions" default="{}"/>
+  <Property name="objects" default="{}"/>
+  <Property name="classes" default="{}"/>
+  <Property name="components" default="{}"/>    
+  <Property name="structure" default="null"/>
+  <Property name="parser" default="null"/>
+
+  <Method name="getDataExtended" arguments=""><![CDATA[
+    return $.extend({
+      structure: this.structure.toJavaScript(),
+      parserClass: this.parser.attr("name") 
+    }, this.getData());
+  ]]></Method>
+  
+  <Method name="toJavaScript" arguments=""><![CDATA[
+    return (this.attr("exclude")!="yes") ? this.root.templates.apply(this.tag, this.getDataExtended()) : "";
+  ]]></Method>
+</Class> 
+
+
+
+<Class id="parser_psi" arguments="">
+  <Validator element-key="parser_psi" id="*identifier" name="*identifier" implementation="*text" description="text"/>
+  <Property name="properties" default="null"/>
+  <Property name="statics" default="null"/>
+  <Property name="methods" default="null"/>
+  <Property name="events" default="null"/>
+  
+  <Method name="getDataExtended" arguments=""><![CDATA[
+    return $.extend({
+      define: this.parent.structure.defineToJavaScript() 
+    }, this.getData());
+  ]]></Method>
+  
+  <Method name="toJavaScript" arguments=""><![CDATA[
+    return this.root.templates.apply(this.tag, this.getDataExtended());
+  ]]></Method>
+</Class>
+
+
+
+<Class id="structure" arguments="">
+  <Validator element-key="structure" id="*identifier" root="*identifier"/>
+  <Property name="map" default="{}"/>
+  <Property name="structureElements" default="{}"/>
+
+  <Event name="onInit" arguments=""><![CDATA[
+    this.classRoot = this.program.objectsTags.Class[this.attr("root")];
+  ]]></Event>
+  
+  <Event name="onAddChild" arguments="uid, element"><![CDATA[
+    this.map[element.attr("key")] = element;
+    if (element.attr("key")==this.attr("root"))
+      this.elementRoot = element;
+  ]]></Event>
+  
+  <Method name="defineToJavaScript" arguments=""><![CDATA[
+    //Crear identificadores y estructura de elementos
+    var elements = "";
+    for(var id in this.structureElements){
+      var element = this.structureElements[id];
+      if (element.hasChilds()) {
+        var data = {nameId: element.nameId(), childs: element.getDefineText()};
+        elements += this.root.templates.apply("DefineElement", data);
+      }
+    }
+    return this.root.templates.apply("DefineProperties", { elements: elements });
+  ]]></Method>
+  
+  <Method name="toJavaScript" arguments=""><![CDATA[
+    //Crear identificadores y estructura de elementos
+    var identifiers = "", elements = "";
+    for(var id in this.structureElements){
+      var element = this.structureElements[id],
+          dataIdent = {id: element.attr("key"), nameId: element.nameId()};
+      identifiers += this.root.templates.apply("Identifiers", dataIdent);
+      elements += this.root.templates.apply("StructureElement", element.getData());
+    }
+    //Obtener estructura de la Gramática Psi
+    var data = {
+      grammar: this.parent.attr("name"),
+      root: this.elementRoot.nameId(),
+      identifiers: identifiers,
+      elements: elements
+    };
+    return this.root.templates.apply("Structure", data);
+  ]]></Method>
+</Class> 
+
+
+
+<Class id="structure_element" arguments="">
+  <Validator element-key="structure_element" key="*identifier" tag="*identifier" class-id="*identifier"/>
+  <Property name="structureChilds" default="{}"/>
+    
+  <Event name="onInit" arguments=""><![CDATA[
+    this.classRef = this.program.objectsIds[this.attr("class-id")];
+  ]]></Event>
+  
+  <Method name="index" arguments=""><![CDATA[
+    return this.parent.id()+"_"+this.attr("key");
+  ]]></Method>
+  
+  <Method name="nameId" arguments=""><![CDATA[
+    return "ID_TAG_"+this.attr("key").toUpperCase();
+  ]]></Method>
+  
+  <Method name="hasChilds" arguments=""><![CDATA[
+    return !$.isEmptyObject(this.structureChilds);
+  ]]></Method>
+  
+  <Method name="getValidatorText" arguments=""><![CDATA[
+    var validator = this.classRef.implementation.getValidator( this.attr("key") );
+    return validator ? '"'+validator.get()+'"' : "null";
+  ]]></Method>
+  
+  <Method name="getMultiplicityText" arguments=""><![CDATA[
+    var childs = new Array(); 
+    for(var id in this.structureChilds)
+      childs.push(this.structureChilds[id]);
+    if (childs.length==0) return "null";
+    //Crear objetos
+    var result = "{ ";
+    for(var i=0; i<childs.length; i++) 
+      result += childs[i].toMultiplicity() + (i<childs.length-1 ? "," : " }");
+    return result;
+  ]]></Method>
+  
+  <Method name="getChildrenText" arguments=""><![CDATA[
+    var childs = new Array(); 
+    for(var id in this.structureChilds)
+      childs.push(this.structureChilds[id]);
+    if (childs.length==0) return "null";
+    //Crear objetos
+    var result = "{ ";
+    for(var i=0; i<childs.length; i++) 
+      result += childs[i].toItem() + (i<childs.length-1 ? "," : " }");
+    return result;
+  ]]></Method>
+  
+  <Method name="getDefineText" arguments=""><![CDATA[
+    var result = "";
+    for(var id in this.structureChilds)
+      result += this.structureChilds[id].toDefine();
+    return result;
+  ]]></Method>  
+  
+  <Method name="getData" arguments=""><![CDATA[
+    return {
+      nameId: this.nameId(),
+      full: this.classRef.component.fullName+"."+this.classRef.attr("name"),
+      tag: this.attr("tag"),
+      multiplicity: this.getMultiplicityText(),
+      children: this.getChildrenText(),
+      strict: this.attr("chidren-strict")=="false" ? "false" : "true",
+      send: this.attr("send-context")=="true" ? "true" : "false",
+      validator: this.getValidatorText()
+    };
+  ]]></Method>
+</Class> 
+
+
+<Class id="structure_child" arguments="">
+  <Validator element-key="structure_child" ref="*identifier" multiplicity="*=0..1|select(0..1,1..1,0..n,1..n)" property="*identifier" index="text"/>
+  
+  <Event name="onInit" arguments="" trycatch="false"><![CDATA[
+    this.classRef = this.program.objectsTags.Class[this.attr("ref")];
+    this.structure = this.parent.parent;
+  ]]></Event>
+  
+  <Method name="index" arguments="" trycatch="false"><![CDATA[
+    return this.parent.index()+"_"+this.attr("tag").toLowerCase();
+  ]]></Method>
+  
+  <Method name="toItem" arguments="" trycatch="false"><![CDATA[
+    if (this.structure.map[this.attr("ref")]==null)
+			throw new PsiError("MPSI.STRUCTURE_CHILD_ERROR", [this.attr("ref"), this.structure.id()], [this, this.structure]);
+    return '"'+this.attr("tag")+'": '+this.structure.map[this.attr("ref")].nameId();
+  ]]></Method>
+  
+  <Method name="toMultiplicity" arguments="" trycatch="false"><![CDATA[
+    return '"'+this.attr("tag")+'": "'+this.attr("multiplicity")+'"';
+  ]]></Method>
+  
+  <Method name="toDefine" arguments=""><![CDATA[
+    var m = this.attr("multiplicity"), 
+        s = m=="0..1" || m=="1..1" 
+          ? "" 
+          : "[newElement." + (this.hasAttr("index") ? this.attr("index"): "id()") + "]", 
+        data = {
+          tag: this.attr("tag"), 
+          field: "." + this.attr("property") + s
+        };
+    return this.root.templates.apply("DefineChild", data);
+  ]]></Method>
+</Class>
+
+
+</ModelImplementationPsi>
+

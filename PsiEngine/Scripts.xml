@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelImplementationPsi>
+
+
+<Script id="inheritance"><![CDATA[
+/*-----------------------------------------------------
+* Classical Inheritance in JavaScript
+* Douglas Crockford
+* copy: http://www.crockford.com/javascript/inheritance.html
+*-----------------------------------------------------*/
+
+Function.prototype.method = function(name, func) {
+  this.prototype[name] = func;
+  return this;
+};
+
+Function.prototype.methods = function(functions) {
+  for (var name in functions)
+    this.prototype[name] = functions[name];
+  return this;
+};
+
+/* It should be called after both classes are defined, but 
+   before the inheriting class's methods are added. */
+Function.method('inherits', function(parent) {
+  var d = {}, p = (this.prototype = new parent());
+  this.method('uber', function uber(name) {
+    if (!(name in d)) {
+      d[name] = 0;
+    }
+    var f, r, t = d[name], v = parent.prototype;
+    if (t) {
+      while (t) {
+        v = v.constructor.prototype;
+        t -= 1;
+      }
+      f = v[name];
+    } else {
+      f = p[name];
+      if (f == this[name]) {
+        f = v[name];
+      }
+    }
+    d[name] += 1;
+    r = f.apply(this, Array.prototype.slice.apply(arguments, [1]));
+    d[name] -= 1;
+    return r;
+  });
+  return this;
+});
+
+
+/* The swiss method loops through the arguments. 
+For each name, it copies a member from the parent's 
+prototype to the new class's prototype. */
+Function.method('swiss', function(parent) {
+  for (var i = 1; i < arguments.length; i += 1) {
+    var name = arguments[i];
+    this.prototype[name] = parent.prototype[name];
+  }
+  return this;
+});
+
+]]></Script>  
+
+
+<Script id="utils"><![CDATA[
+/*-----------------------------------------------------
+* Function:  gup
+*-----------------------------------------------------*/
+function gup(name) {
+  name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+  var regexS = "[\\?&]" + name + "=([^&#]*)",
+      regex = new RegExp(regexS),
+      results = regex.exec(window.location.href);
+  return results ? results[1] : null;
+}
+/*-----------------------------------------------------
+* Function: apply
+*-----------------------------------------------------*/
+var APPLY_PATTERN = /\{\{([\w\.:@-]*)\}\}/g;  
+function apply(source, data) {
+  return source.replace(APPLY_PATTERN, function (str, key) {
+    var keys = key.split("."),
+        v = data[keys.shift()];
+    if (v.jquery)
+      switch(keys.length){
+        case 0: v =  v.text(); break;
+        case 1: v = v.attr(keys[0]); break;
+        case 2: v = keys[1]=="*" ? v.find(keys[0]).text() : v.find(keys[0]).attr(keys[1]); break;
+      }
+      //v = keys.length==1 ? v.attr(keys[0]) : v.text();
+    if ($.isPlainObject(v))
+      for (var i = 0, l = keys.length; i < l; i++) 
+      	v = v[keys[i]];
+    return (typeof v !== "undefined" && v !== null) ? v : "";
+  }); 
+}
+  
+]]></Script>  
+
+
+</ModelImplementationPsi>

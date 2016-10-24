@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelPsi name="Model Implementation Psi" include-header="yes" version="1.0" acronym="MIPsi" 
+          description="Modelo de implementación para generación de código">
+
+<Implementation alias="Base" url="psi/languages/mpsi/Base.xml"/>
+<Implementation alias="Elements" url="psi/languages/mpsi/Elements.xml"/>
+<Implementation alias="ComponentPsi" url="psi/languages/mpsi/ComponentPsi.xml"/>
+<Implementation alias="Models" url="psi/languages/mpsi/Models.xml"/>
+
+<ComponentPsi id="mpsi" name="MPsi" public="yes" implementation="Models" description="Models JavaScript Psi">
+	<Texts id="mpsi_messages" name="MPSI" implementation="Base" description="Textos de modelos Psi"/>
+  
+	<Enum id="element_type" name="ElementType" public="yes" description="Elemento de programación Psi">
+    <Members Var="Var" Enum="Enum" Function="Function" Object="Object" Class="Class" Component="Component" ComponentPsi="ComponentPsi"/>
+  </Enum>
+  <Class id="templates" name="Templates" public="yes" implementation="Base" description="Plantilla para elementos de programación Psi">
+		<Properties sources="Lista de fuentes" models="lista de modelos"/>
+    <Methods init="Inicializar listado de templates"
+             register="Adicionar fuente de plantilla para elemento de programación Psi"
+             apply="Aplicar plantilla Nano"/>
+	</Class>
+	<Class id="base" name="Base" inherits="PsiXML.PsiElement" implementation="Base" description="Cargar documento XML a PsiXML">
+		<Events onInit="Inicializar lectura de documento"/>
+		<Methods getInfo="Obtiene los atributos básicos de un elemento de programación Psi"
+		         getData="Método abstracto que obtiene la información para la transformación a JavaScript"  
+		         toJavaScript="Método abstracto para obtener código JavaScript a partir de una plantilla para elemento de programación Psi"/>
+	</Class>
+  <Class id="implementation" name="Implementation" public="yes" inherits="PsiXML.PsiElement" implementation="Base" description="Cargar documento XML a PsiXML">
+		<Events onInit="Inicializar lectura de documento de implementación Psi"/>
+		<Methods compile="Compilar fichero de implementación con MIPsi"/>
+	</Class>
+	<Class id="texts" name="Texts" public="yes" inherits="Base" implementation="Base" description="Definición de mensajes PsiText">
+		<Methods toJavaScript="Obtener la transformación del objeto en texto"/>
+	</Class>
+  
+  
+  <Class id="var" name="Var" public="yes" inherits="Base" implementation="Elements" description="Cargar documento XML a PsiXML">
+		<Methods getData="Obtener transformación de variable a JavaScript"/>
+	</Class>
+	<Class id="enum" name="Enum" public="yes" inherits="Base" implementation="Elements" description="Cargar documento XML a PsiXML">
+		<Properties members="Lista de miembros o ítems"/>
+		<Methods getData="Obtener los miembros del tipo enumerativo codificados en JavaScript"/>
+	</Class>
+	<Class id="members" name="Members" public="yes" inherits="PsiXML.PsiElement" implementation="Elements" description="Cargar documento XML a PsiXML">
+		<Methods toJavaScript="Obtener los miembros del tipo enumerativo codificados en JavaScript"/>
+	</Class>
+	<Class id="script" name="Script" public="yes" inherits="Base" implementation="Elements" description="Adicionar JavaScript">
+		<Methods toJavaScript="Obtener script de implementación"/>
+	</Class>
+	<Class id="function" name="Function" public="yes" inherits="Base" implementation="Elements" description="Definición de una función JavaScript">
+		<Methods getData="Obtener los argumentos y el cuerpo de la función codificados en JavaScript"/>
+	</Class>
+	
+	
+	<Class id="properties" name="Properties" public="yes" inherits="PsiXML.PsiElement" implementation="Base" description="Definición de lista de propiedades">
+		<Properties separatorFinal="Separador de final"/>
+		<Methods toJavaScript="Obtener transformación de propiedades a JavaScript"/>
+	</Class>
+  <Class id="options" name="Options" public="yes" inherits="PsiXML.PsiElement" implementation="Base" description="Definición de lista de opciones para el widget jQuery">
+		<Methods toJavaScript="Obtener transformación de opciones jQuery a JavaScript"/>
+	</Class>
+	<Class id="statics" name="Statics" public="yes" inherits="PsiXML.PsiElement" implementation="Base" description="Definición de lista de propiedades estáticas de la clase">
+		<Methods toJavaScript="Obtener transformación de propiedades estáticas a JavaScript"/>
+	</Class>
+	<Class id="methods" name="Methods" public="yes" inherits="PsiXML.PsiElement" implementation="Base" description="Definición de lista de métodos">
+		<Properties separatorFinal="Separador de final"/>
+		<Methods toJavaScript="Obtener transformación de métodos a JavaScript"/>
+	</Class>
+	
+  <Class id="object" name="Object" public="yes" inherits="Base" implementation="Elements" description="Definición de un objeto">
+		<Properties properties="Lista de propiedades" methods="Lista de métodos"/>
+		<Methods getData="Obtener propiedades, métodos y eventos del objeto codificados en JavaScript"/>
+	</Class>	
+	<Class id="class" name="Class" public="yes" inherits="Base" implementation="Elements" description="Definición de una clase Psi">
+    <Properties properties="Lista de propiedades" statics="Lista de métodos estáticos" methods="Lista de métodos" events="Lista de eventos"/>
+		<Methods getData="Obtener propiedades, métodos y eventos de la clase codificados en JavaScript"/>
+	</Class>
+  <Class id="widget" name="Widget" public="yes" inherits="Base" implementation="Elements" description="Definición de un widget jQuery">
+    <Properties  options="Mapa de opciones" properties="Lista de propiedades" methods="Lista de métodos" events="Lista de eventos"/>
+		<Methods getData="Obtener opciones, propiedades, métodos y eventos de la clase codificados en JavaScript"/>
+	</Class>
+  <Class id="component" name="Component" public="yes" inherits="Base" implementation="Elements" description="Definición de una Componente">
+		<Properties texts="Lista de textos" properties="Lista de propiedades" methods="Lista de métodos" vars="Lista de variables" 
+                enums="Lista de tipos enumerativos" scripts="Lista de scripts" functions="Lista de funciones" objects="Lista de objetos" 
+                classes="Lista de clases" components="Lista de componentes"/>
+		<Events onChildrenCreated="Establecer el fullName"/>
+    <Methods getData="Obtener propiedades, métodos y lementos de programación Psi codificados en JavaScript"/>
+	</Class>
+	
+	<Class id="component_psi" name="ComponentPsi" public="yes" inherits="Component" implementation="ComponentPsi" description="Definición de una Componente">
+	  <Properties texts="Lista de textos" properties="Lista de propiedades" methods="Lista de métodos" vars="Lista de variables" 
+                enums="Lista de tipos enumerativos" scripts="Lista de scripts" functions="Lista de funciones" objects="Lista de objetos" 
+                classes="Lista de clases" components="Lista de componentes" structure="Estructura del lenguaje Psi" parser="Analizador del lenguaje Psi"/>
+	  <Methods getDataExtended="Obtener propiedades, métodos y elementos de programación Psi codificados en JavaScript"
+	           toJavaScript="Obtener transformación Componente Psi a JavaScript"/>
+	</Class>
+	<Class id="parser_psi" name="ParserPsi" public="yes" inherits="Class" implementation="ComponentPsi" description="Definición del analizador de la Gramática Psi">
+	  <Properties properties="Lista de propiedades" statics="Lista de métodos estáticos" methods="Lista de métodos" events="Lista de eventos"/>
+		<Methods getDataExtended="Obtener información de la clase y la definición de la estrucutra de la Gramática Psi"
+	           toJavaScript="Obtener transformación Parse Psi a JavaScript"/>
+	</Class>
+  
+  
+	<Class id="structure" name="Structure" public="yes" inherits="PsiXML.PsiElement" implementation="ComponentPsi" description="Definición de la estriuctura para un Componente Psi">
+    <Properties map="{}" structureElements="Lista de etiquetas enlazadas con las clases"/>
+	  <Events onInit="Inicializa la referencia a la clase raíz"
+            onAddChild="Inicializa el elemento raíz"/>
+    <Methods defineToJavaScript="Obtener metodo de definición de propiedades para el analizador de Gramática Psi"
+             toJavaScript="Obtener estructura Psi en JavaScript"/>
+	</Class>
+	<Class id="structure_element" name="StructureElement" public="yes" inherits="PsiXML.PsiElement" implementation="ComponentPsi" description="Definición de la estriuctura para un Componente Psi">
+    <Properties structureChilds="Lista de estructuras hijas"/>
+    <Events onInit="Inicializa la referencia a la clase de la llave"/>
+    <Methods index="Obtener un indice único"
+             nameId="Obtener nombre de identificador"
+             hasChilds="Determinar si tiene hijos"
+             getValidatorText="Crear validación de los atributos del elemento"
+             getMultiplicityText="Obtener text del objeto de la multiplicidad de los hijos"
+             getChildrenText="Obtener texto en forma de objeto de los hijos"
+             getDefineText="Obtener definición de hijos para el método de análisis de Gramática Psi"
+             getData="Obtener información de la estructura del elemento"/>
+	</Class>
+	<Class id="structure_child" name="StructureChild" public="yes" inherits="PsiXML.PsiElement" implementation="ComponentPsi" description="Definición de la estriuctura para un Componente Psi">
+	  <Events onInit="Inicializa la referencia a la clase de referencia"/>
+    <Methods index="Obtener un indice único"
+             toItem="Obtener texto 'tag: ID_TAG'"
+             toMultiplicity="Obtener texto 'tag: multiplicity'"
+             toDefine="Obtener texto case de definición de analizador"/>
+	</Class>
+
+
+  <Class id="model_psi" name="ModelPsi" public="yes" inherits="Base" implementation="Models" description="Herramientas basadas en PsiXML, WPsi">
+		<Properties implementations="Lista de implementaciones" vars="Lista de variables" enums="Lista de tipos enumerativos"
+		            scripts="Lista de scripts" functions="Lista de funciones" objects="Lista de objetos" classes="Lista de clases"
+		            widgets="Lista de widgets" components="Lista de componentes" components_psi="Lista de componentes Psi"/>
+		<Events onInit="Inicializar modelo Psi"/>
+		<Methods acronym="Acrónimo para el manejo de ficheros de implementación"
+		         getData="Obtener la transformación en texto"
+		         toJavaScript="Codificar modelo Psi a JavaScript"/>
+	</Class>
+	<Parser id="model_psi_parser" name="ModelPsiParser" implementation="Models" description="Personalizar analizador Psi">
+		<Events onInit="Iniciar parser de extensiones de gráficos" 
+		        onErrorParseElement="Despues de creado un elemento" />
+	</Parser>
+	
+	
+	<Structure id="structure_model_psi" root="model_psi">
+		<Element key="model_psi" root="yes" tag="ModelPsi" class-id="model_psi">
+      <Child id="1" ref="implementation" tag="Implementation" multiplicity="0..n" property="implementations" index="alias"/>
+      <Child id="2" ref="var" tag="Var" multiplicity="0..n" property="vars"/>
+      <Child id="3" ref="enum" tag="Enum" multiplicity="0..n" property="enums"/>
+      <Child id="4" ref="script" tag="Script" multiplicity="0..n" property="scripts"/>
+      <Child id="5" ref="function" tag="Function" multiplicity="0..n" property="functions"/>
+      <Child id="6" ref="object" tag="Object" multiplicity="0..n" property="objects"/>
+      <Child id="7" ref="class" tag="Class" multiplicity="0..n" property="classes"/>
+      <Child id="8" ref="widget" tag="Widget" multiplicity="0..n" property="widgets"/>
+      <Child id="9" ref="component" tag="Component" multiplicity="0..n" property="components"/>
+      <Child id="10" ref="component_psi" tag="ComponentPsi" multiplicity="0..n" property="components_psi"/>
+    </Element>
+    
+    <Element key="implementation" tag="Implementation" class-id="implementation"/>
+		<Element key="var" tag="Var" class-id="var"/>
+		<Element key="members" tag="Members" class-id="members"/>
+		<Element key="enum" tag="Enum" class-id="enum">
+      <Child id="11" ref="members" tag="Members" multiplicity="1..1" property="members"/>
+		</Element>
+
+		<Element key="script" tag="Script" class-id="script"/>
+		<Element key="function" tag="Function" class-id="function"/>
+		<Element key="properties" tag="Properties" class-id="properties"/>
+		<Element key="options" tag="Options" class-id="options"/>
+		<Element key="methods" tag="Methods" class-id="methods"/>
+    <Element key="events" tag="Events" class-id="methods"/>
+		<Element key="statics" tag="Statics" class-id="statics"/>
+		<Element key="object" tag="Object" class-id="object">
+      <Child id="12" ref="properties" tag="Properties" multiplicity="0..1" property="properties"/>
+      <Child id="13" ref="methods" tag="Methods" multiplicity="0..1" property="methods"/>
+		</Element>
+		<Element key="class" tag="Class" class-id="class">
+      <Child id="14" ref="properties" tag="Properties" multiplicity="0..1" property="properties"/>
+      <Child id="15" ref="statics" tag="Statics" multiplicity="0..1" property="statics"/>
+      <Child id="16" ref="methods" tag="Methods" multiplicity="0..1" property="methods"/>
+      <Child id="17" ref="events" tag="Events" multiplicity="0..1" property="events"/>
+		</Element>
+    <Element key="widget" tag="Widget" class-id="widget">
+      <Child id="18" ref="options" tag="Options" multiplicity="0..1" property="options"/>
+      <Child id="19" ref="properties" tag="Properties" multiplicity="0..1" property="properties"/>
+      <Child id="20" ref="methods" tag="Methods" multiplicity="0..1" property="methods"/>
+      <Child id="21" ref="events" tag="Events" multiplicity="0..1" property="events"/>
+		</Element>
+		<Element key="component" tag="Component" class-id="component">
+      <Child id="22" ref="texts" tag="Texts" multiplicity="0..1" property="texts"/>
+      <Child id="23" ref="properties" tag="Properties" multiplicity="0..1" property="properties"/>
+      <Child id="24" ref="methods" tag="Methods" multiplicity="0..1" property="methods"/>
+      <Child id="25" ref="var" tag="Var" multiplicity="0..n" property="vars"/>
+      <Child id="26" ref="enum" tag="Enum" multiplicity="0..n" property="enums"/>
+      <Child id="27" ref="script" tag="Script" multiplicity="0..n" property="scripts"/>
+      <Child id="28" ref="function" tag="Function" multiplicity="0..n" property="functions"/>
+      <Child id="29" ref="object" tag="Object" multiplicity="0..n" property="objects"/>
+      <Child id="30" ref="class" tag="Class" multiplicity="0..n" property="classes"/>
+      <Child id="31" ref="component" tag="Component" multiplicity="0..n" property="components"/>
+		</Element>
+		
+		<Element key="parser_psi" tag="Parser" class-id="parser_psi">
+      <Child id="32" ref="properties" tag="Properties" multiplicity="0..1" property="properties"/>
+      <Child id="33" ref="statics" tag="Statics" multiplicity="0..1" property="statics"/>
+      <Child id="34" ref="methods" tag="Methods" multiplicity="0..1" property="methods"/>
+      <Child id="35" ref="events" tag="Events" multiplicity="0..1" property="events"/>
+		</Element>
+		<Element key="structure_child" tag="Child" class-id="structure_child"/>
+		<Element key="structure_element" tag="Element" class-id="structure_element">
+      <Child id="36" ref="structure_child" tag="Child" multiplicity="0..n" property="structureChilds" index="index()"/>
+		</Element>
+		<Element key="structure" tag="Structure" class-id="structure">
+      <Child id="37" ref="structure_element" tag="Element" multiplicity="1..n" property="structureElements" index="index()"/>
+		</Element>
+		<Element key="component_psi" tag="ComponentPsi" class-id="component_psi">
+      <Child id="38" ref="texts" tag="Texts" multiplicity="0..1" property="texts"/>
+      <Child id="39" ref="properties" tag="Properties" multiplicity="0..1" property="properties"/>
+      <Child id="40" ref="methods" tag="Methods" multiplicity="0..1" property="methods"/>
+      <Child id="41" ref="var" tag="Var" multiplicity="0..n" property="vars"/>
+      <Child id="42" ref="enum" tag="Enum" multiplicity="0..n" property="enums"/>
+      <Child id="43" ref="script" tag="Script" multiplicity="0..n" property="scripts"/>
+      <Child id="44" ref="function" tag="Function" multiplicity="0..n" property="functions"/>
+      <Child id="45" ref="object" tag="Object" multiplicity="0..n" property="objects"/>
+      <Child id="46" ref="class" tag="Class" multiplicity="0..n" property="classes"/>
+      <Child id="47" ref="component" tag="Component" multiplicity="0..n" property="components"/>
+
+      <Child id="48" ref="structure" tag="Structure" multiplicity="1..1" property="structure"/>
+      <Child id="49" ref="parser_psi" tag="Parser" multiplicity="1..1" property="parser"/>
+		</Element>
+
+		<Element key="texts" tag="Texts" class-id="texts"/>
+	</Structure>
+</ComponentPsi>
+
+
+</ModelPsi>

@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelImplementationPsi>
+
+
+<Texts id="psi_xml_messages">
+  <Language key="ES" name="Spanish">
+    <Text key="VALIDATE_DIGITS">El atributo '$1' debe ser un dígito numérico</Text>
+    <Text key="VALIDATE_NUMBER">El atributo '$1' debe ser número decimal. Use '.' como separador de decimales</Text>
+    <Text key="VALIDATE_INTEGER">El atributo '$1' debe ser número entero</Text>
+    <Text key="VALIDATE_RANGE">El atributo '$1' fuera de rango [$2, $3]</Text>
+    <Text key="VALIDATE_BOOLEAN">El atributo '$1' no es booleano</Text>
+    <Text key="VALIDATE_IDENTIFIER">El atributo '$1' debe ser un identificador. Use a-z, A-Z, 0-9, '_' o '-'</Text>
+    <Text key="VALIDATE_VARIABLE">El atributo '$1' debe ser un nombre de variable. Use a-z, A-Z, 0-9 o '_'</Text>
+    <Text key="VALIDATE_CLASSCSS">El atributo '$1' debe ser un nombre de clase CSS. Use a-z, A-Z, 0-9 o '_' o '-' o ':' o '.'</Text>
+    <Text key="VALIDATE_SELECT">El atributo '$1' debe ser una de las siguientes opciones: $2</Text>
+    <Text key="VALIDATE_DATETIME">El atributo '$1' debe ser de tipo fecha</Text>
+    <Text key="VALIDATE_DATEISO">El atributo '$1' debe ser de tipo fecha ISO (aaaa/mm/dd)</Text>
+    <Text key="VALIDATE_EMAIL">El atributo '$1' debe ser de tipo email</Text>
+    <Text key="VALIDATE_URL">El atributo '$1' debe ser de tipo url</Text>
+    
+    <Text key="PSI_ELEMENT_ATTRIBUTE_MANDATORY">Elemento '$1', el atributo '$2' es obligatorio</Text>
+    <Text key="PSI_ELEMENT_ATTRIBUTE_REMOVE_MANDATORY">Elemento '$1', el atributo '$2' es obligatorio y no se puede remover</Text>
+    
+    <Text key="DEFINITION_ELEMENT_INVALID_ATTRIBUTE">Elemento '$1', el atributo '$2' no esta bien definido</Text>
+    <Text key="DEFINE_ELEMENT_CHILDREN_INVALID">Elemento '$1', el elemento hijo '$2' no esta definido</Text>
+    
+    <Text key="DOCUMENT_ERROR">Error lectura de documento XML. URL: $1. Estado: '$2'. Detalle: $3</Text>
+    
+    <Text key="PROCESS">Element: $1.$2[id=$3]. Error: $4.</Text>
+    
+    <Text key="SCANNER_DOCUMENT_LOADED">$1-> Documento XML '$2' cargado</Text>
+    <Text key="SCANNER_DOCUMENT_SOURCE_STRING">$1-> Documento escaneado</Text>
+    <Text key="SCANNER_NOT_PROGRAM">$1-> Programa NO definido</Text>
+    
+    <Text key="LANGUAGE_PSI_NULL_ELEMENT">Al Lenguaje XML '$1' se intentando crear un elemento nulo</Text>
+    <Text key="LANGUAGE_PSI_NULL_DOCUMENT">Al Lenguaje XML '$1' se intentando crear un elemento sin documento</Text>
+    <Text key="LANGUAGE_PSI_NOT_EXIST_ELEMENT">Al Lenguaje XML '$1' no de ha definido el tag '$2'</Text>
+    
+    <Text key="LANGUAGE_PSI_FACTORY_ERROR_NAME">Al Lenguaje XML '$1' no se ha definido NAME</Text>
+    <Text key="LANGUAGE_PSI_FACTORY_ERROR_TAGS">Al Lenguaje XML '$1' no se ha definido TAGS</Text>
+    <Text key="LANGUAGE_PSI_FACTORY_ERROR_ROOT">Al Lenguaje XML '$1' no se ha definido ROOT</Text>
+    
+    <Text key="TRASH_ADD_ELEMENT">Trash elemento adicionado: $1</Text>
+    <Text key="TRASH_REMOVE_ERROR">Trash error: $1</Text>
+    
+    <Text key="PARSE_ERROR">$1-> Error de compilación. Detalle: $2</Text>
+    <Text key="PARSE_WARNING">$1-> Warning de compilación (Tag=$2). Detalle: $3</Text>
+    <Text key="PARSE_INIT">$1-> Inicio de compilación</Text>
+    <Text key="PARSE_FINNISH">$1-> Fin de compilación</Text>
+    <Text key="PARSE_ELEMENT">$1-> Analizando: $2</Text>
+    
+    <Text key="PROGRAM_INIT">$1-> Programa iniciado</Text>
+    <Text key="PROGRAM_SCANNER">$1-> Cargando programa fuente Psi</Text>
+    <Text key="PROGRAM_PARSE">$1-> Iniciando análisis</Text>
+    <Text key="PROGRAM_ERROR">$1-> Programa con errores</Text>
+    <Text key="PROGRAM_RUN">$1-> Programa ejecutándose</Text>
+    <Text key="PROGRAM_STOP">$1-> Programa terminado</Text>
+    <Text key="PROGRAM_NOT_SOURCE">$1-> No se pudo obtener Xml</Text>
+    
+    <Text key="INTERPRETER_ERROR_EXIST_PROGRAM">Nombre de programa '$1' ya registrado</Text>
+    <Text key="WATCHED">$1</Text>
+  </Language>
+  <Language key="EN" name="English">
+    <Text key="VALIDATE_DIGITS">El atributo '$1' debe ser un dígito numérico</Text>
+    <Text key="VALIDATE_NUMBER">El atributo '$1' debe ser número decimal. Use '.' como separador de decimales</Text>
+    <Text key="VALIDATE_INTEGER">El atributo '$1' debe ser número entero</Text>
+    <Text key="VALIDATE_RANGE">El atributo '$1' fuera de rango [$2, $3]</Text>
+    <Text key="VALIDATE_BOOLEAN">El atributo '$1' no es booleano</Text>
+    <Text key="VALIDATE_IDENTIFIER">El atributo '$1' debe ser un identificador. Use a-z, A-Z, 0-9, '_' o '-'</Text>
+    <Text key="VALIDATE_VARIABLE">El atributo '$1' debe ser un nombre de variable. Use a-z, A-Z, 0-9 o '_'</Text>
+    <Text key="VALIDATE_CLASSCSS">El atributo '$1' debe ser un nombre de clase CSS. Use a-z, A-Z, 0-9 o '_' o '-' o ':' o '.'</Text>
+    <Text key="VALIDATE_SELECT">El atributo '$1' debe ser una de las siguientes opciones: $2</Text>
+    <Text key="VALIDATE_DATETIME">El atributo '$1' debe ser de tipo fecha</Text>
+    <Text key="VALIDATE_DATEISO">El atributo '$1' debe ser de tipo fecha ISO (aaaa/mm/dd)</Text>
+    <Text key="VALIDATE_EMAIL">El atributo '$1' debe ser de tipo email</Text>
+    <Text key="VALIDATE_URL">El atributo '$1' debe ser de tipo url</Text>
+    
+    <Text key="PSI_ELEMENT_ATTRIBUTE_MANDATORY">Elemento '$1', el atributo '$2' es obligatorio</Text>
+    <Text key="PSI_ELEMENT_ATTRIBUTE_REMOVE_MANDATORY">Elemento '$1', el atributo '$2' es obligatorio y no se puede remover</Text>
+    
+    <Text key="DEFINITION_ELEMENT_INVALID_ATTRIBUTE">Elemento '$1', el atributo '$2' no esta bien definido</Text>
+    <Text key="DEFINE_ELEMENT_CHILDREN_INVALID">Elemento '$1', el elemento hijo '$2' no esta definido</Text>
+    
+    <Text key="DOCUMENT_ERROR">Error lectura de documento XML. URL: $1. Estado: '$2'. Detalle: $3</Text>
+    
+    <Text key="PROCESS">Element: $1.$2[id=$3]. Error: $4.</Text>
+    
+    <Text key="SCANNER_DOCUMENT_LOADED">$1-> Documento XML '$2' cargado</Text>
+    <Text key="SCANNER_DOCUMENT_SOURCE_STRING">$1-> Documento escaneado</Text>
+    <Text key="SCANNER_NOT_PROGRAM">$1-> Programa NO definido</Text>
+    
+    <Text key="LANGUAGE_PSI_NULL_ELEMENT">Al Lenguaje XML '$1' se intentando crear un elemento nulo</Text>
+    <Text key="LANGUAGE_PSI_NULL_DOCUMENT">Al Lenguaje XML '$1' se intentando crear un elemento sin documento</Text>
+    <Text key="LANGUAGE_PSI_NOT_EXIST_ELEMENT">Al Lenguaje XML '$1' no de ha definido el tag '$2'</Text>
+    
+    <Text key="LANGUAGE_PSI_FACTORY_ERROR_NAME">Al Lenguaje XML '$1' no se ha definido NAME</Text>
+    <Text key="LANGUAGE_PSI_FACTORY_ERROR_TAGS">Al Lenguaje XML '$1' no se ha definido TAGS</Text>
+    <Text key="LANGUAGE_PSI_FACTORY_ERROR_ROOT">Al Lenguaje XML '$1' no se ha definido ROOT</Text>
+    
+    <Text key="TRASH_ADD_ELEMENT">Trash elemento adicionado: $1</Text>
+    <Text key="TRASH_REMOVE_ERROR">Trash error: $1</Text>
+    
+    <Text key="PARSE_ERROR">$1-> Error de compilación. Detalle: $2</Text>
+    <Text key="PARSE_WARNING">$1-> Warning de compilación (Tag=$2). Detalle: $3</Text>
+    <Text key="PARSE_INIT">$1-> Inicio de compilación</Text>
+    <Text key="PARSE_FINNISH">$1-> Fin de compilación</Text>
+    <Text key="PARSE_ELEMENT">$1-> Analizando: $2</Text>
+    
+    <Text key="PROGRAM_INIT">$1-> Programa iniciado</Text>
+    <Text key="PROGRAM_SCANNER">$1-> Cargando programa fuente Psi</Text>
+    <Text key="PROGRAM_PARSE">$1-> Iniciando análisis</Text>
+    <Text key="PROGRAM_ERROR">$1-> Programa con errores</Text>
+    <Text key="PROGRAM_RUN">$1-> Programa ejecutándose</Text>
+    <Text key="PROGRAM_STOP">$1-> Programa terminado</Text>
+    <Text key="PROGRAM_NOT_SOURCE">$1-> No se pudo obtener Xml</Text>
+    
+    <Text key="INTERPRETER_ERROR_EXIST_PROGRAM">Nombre de programa '$1' ya registrado</Text>
+    <Text key="WATCHED">$1</Text>
+  </Language>
+</Texts>
+	
+  
+<Enum id="psi_out_type">
+  <Member name="Error" value="'error'" description="Output type error"/>
+  <Member name="Warning" value="'warning'" description="Output type warning"/>
+  <Member name="Debug" value="'debug'" description="Output type debug"/>
+  <Member name="Watch" value="'watch'" description="Output type watch"/>
+</Enum>  
+  
+  
+<Class id="psi_out" arguments="key, params, debug, type" init="this._init(key, params, debug, type)">
+  <Property name="type" default="'debug'"/>
+  <Static name="console"><![CDATA[{
+    debug: false,
+    add: function(output){
+      if ($("#psi_out").length==1) {
+        try { $("#psi_out").debugger("addOutput", output); }
+        catch(e){}
+        return;
+      } 
+      if (typeof opera=="undefined")
+        switch(output.type){
+          case "error": console.error(output.message); break;
+          case "warning": console.warn(output.message); break;
+          case "debug": if (this.debug) console.log(output.message); break;
+          case "watch": console.log(output.message); break; 
+        }
+      else opera.postError(output.message);
+    },
+    openDebugger: function(){
+      if ( $("#psi_out").length==0 )
+      	$("<div id='psi_out'/>").appendTo("body").debugger();
+    }
+  }]]></Static>
+  <Static name="log">{error: new Array(), warning: new Array(), debug: new Array(), watch: new Array()}</Static>
+  <Static name="size">500</Static>
+  
+  <Method name="_init" arguments="key, params, debug, type, code" trycatch="false"><![CDATA[
+    if (key) {
+      if (type) this.type = type;
+      this.message = PsiText.get(key, params);
+      this.code = code;
+      this.debug = debug;
+      PsiOut.log[this.type].push(this);
+      if (PsiOut.size<=PsiOut.log[this.type].length)
+        PsiOut.log[this.type].shift();
+      PsiOut.console.add(this);
+      if (this.type=="error" && $.isFunction(this.send))
+        this.send(key, this, PsiText.get(key.replace(".","_MAP."), params));
+    }
+  ]]></Method>
+</Class>
+  
+<Class id="psi_error" arguments="key, params, debug, code " init="this._init(key, params, debug, 'error', code)">
+</Class>
+  
+<Class id="psi_warning" arguments="key, params, debug, code" init="this._init(key, params, debug, 'warning', code)">
+</Class>
+  
+<Function id="psi_debug" arguments="key, params, debug">new PsiOut(key, params, debug);</Function>
+<Function id="psi_watch" arguments="message, debug"><![CDATA[
+  var params = new Array();
+  params.push(message);
+  new PsiOut("PSIXML.WATCHED", params, debug, "watch");
+]]></Function>  
+
+<Widget id="debugger">
+  <Option name="title">"Depurador Psi"</Option> 
+  <Option name="dialogClass">"tdpsi-toolbar tdpsi-scrubber"</Option> 
+  <Option name="width">500</Option> 
+  <Option name="height">600</Option>
+  <Option name="position">{my: 'right-10 top-10', at: 'right top', collision: 'flip flip', of: window}</Option>
+  
+  <Event name="_create" arguments=""><![CDATA[
+    this._super();
+    
+    //Adicionar botton de minimizarÃ§
+    this.uiDialogTitlebarMinimize = $("<a href='#'><span class='ui-icon ui-icon-minusthick'></span></a>")
+     	.addClass( "tdpsi-toolbar-minimize ui-corner-all" )
+     	.attr( "role", "button" )
+     	.hover( 
+        function () { $(this).addClass("ui-state-hover"); }, 
+        function () { $(this).removeClass("ui-state-hover"); }
+        )
+     	.click(function(event) {
+     		event.preventDefault();	
+     		$("span",this).toggleClass("ui-icon-minusthick").toggleClass("ui-icon-plusthick");
+        $(this).parent().parent().find(".ui-dialog-content").toggle(); 
+     		})
+     	.appendTo(this.uiDialogTitlebar);
+    this.nav = $("<div></div>").appendTo(this.element);
+    var tabs = '<div id="scrubber-tabs" style="width:98%;">'
+             + '  <ul>'
+             + '    <li><a href="#scrubber-tabs-error">Errors</a></li>'
+             + '    <li><a href="#scrubber-tabs-warning">Warnings</a></li>'
+             + '    <li><a href="#scrubber-tabs-debug">Debug</a></li>'
+             + '    <li><a href="#scrubber-tabs-watch">Watch</a></li>'
+             + '  </ul>'
+             + '  <div id="scrubber-tabs-error" class="content-scrubber"></div>'
+             + '  <div id="scrubber-tabs-warning" class="content-scrubber"></div>'
+             + '  <div id="scrubber-tabs-debug" class="content-scrubber"></div>'
+             + '  <div id="scrubber-tabs-watch" class="content-scrubber"></div>'
+             + '</div>';
+    this.content = $(tabs).appendTo(this.element).tabs();
+    $("<button>Limpiar</button>")
+      .appendTo(this.nav)
+      .button({ icons: { primary: "ui-icon-trash" }, content: this.content})
+      .click(function(){
+        $(this).button("option", "content").find(".content-scrubber").empty();
+        //Adicionar Outputs
+        for(var i in PsiOutType) 
+          PsiOut.log[PsiOutType[i]] = new Array();
+      });
+    //Adicionar Outputs
+    for(var i in PsiOutType) {
+      var items = PsiOut.log[PsiOutType[i]]; 
+      for(var j in items)
+        this.addOutput( items[j] );
+    }
+  ]]></Event>
+  
+  <Method name="open" arguments="self, ref, context"><![CDATA[
+    this._super();
+  ]]></Method>
+  
+  <Method name="addOutput" arguments="output"><![CDATA[
+    var out = this.content.find("#scrubber-tabs-"+output.type),
+        mess = $("<div>"+output.message+"</div>").appendTo(out);
+    if (out.children().length%2==0)
+      mess.addClass(output.type=="error" ? "scrubber-error" : output.type=="warning" ? "scrubber-warning" : "scrubber-debug")
+      
+  ]]></Method>
+  
+  <Method name="close" arguments=""><![CDATA[
+    this._super();
+    this.destroy();
+  ]]></Method>
+  
+  <Method name="destroy" arguments=""><![CDATA[
+    $(this.element).empty();
+    this._super();
+    $(this.element).remove();
+  ]]></Method>
+</Widget>
+
+  
+<Object id="psi_data">
+  <Method name="register" arguments="name, functions"><![CDATA[
+    if (this[name]==null)
+      this[name] = $.extend({},{
+        exist: function(key) { return this[key] != null; },
+        get: function(key) { return this[key]; },
+        set: function(key, item) { this[key] = item; },
+        remove: function(key) { 
+          if(this.exist(key)) 
+            delete this[key]; 
+        },
+        register: function(key, item) {
+          if(this.exist(key)) return this[key];
+          this[key] = item;
+          return this[key]; 
+        },
+        rewrite: function(key, item){
+          this.remove(key);
+          return this.register(key, item); 
+        }
+      }, functions);
+  ]]></Method>
+  
+  <Method name="remove" arguments="name"><![CDATA[
+   if (this[name])
+      delete this[name];
+  ]]></Method>
+</Object>
+
+
+  
+<Object id="programs">
+  <Property name="map" default="{}"/>
+  
+  <Method name="exist" arguments="name" trycatch="false"><![CDATA[
+    return this.map[name] != null;
+  ]]></Method>
+  
+  <Method name="get" arguments="name" trycatch="false"><![CDATA[
+    return this.map[name];
+  ]]></Method>
+  
+  <Method name="all" arguments="" trycatch="false"><![CDATA[
+    return this.map;
+  ]]></Method>
+  
+  <Method name="append" arguments="name, program" trycatch="false"><![CDATA[
+    this.map[name] = program; 
+  ]]></Method>
+  
+  <Method name="remove" arguments="name" trycatch="false"><![CDATA[
+    if(this.map[name]) 
+      delete this.map[name];
+  ]]></Method>
+</Object>
+
+
+
+<Class id="texts" arguments="alias, map, lang">
+  <Property name="alias" default="alias"/>
+  <Property name="map" default="map"/>
+  <Property name="lang" default="lang?lang:'ES'"/>
+  
+  <Method name="exist" arguments="key" trycatch="false"><![CDATA[
+    return this.map[this.lang]!=null && this.map[this.lang][key]!=null;
+  ]]></Method>
+  
+  <Method name="get" arguments="key, params"><![CDATA[
+    //Determinar existencia de texto;
+    if (!this.exist(key)) throw new Error("Undefined text: Alias="+this.alias+"; key="+key+", params="+params);
+    //Construir texto
+    var text =this.map[this.lang][key];
+    for (var i=0; i<params.length; i++)
+      text = text.replace("$"+(i+1).toString(), params[i]!=null ? params[i].toString() : "");
+    return text;
+  ]]></Method>
+</Class>
+
+  
+  
+<Component id="psi_texts">
+  <Property name="setTexts" default="{}"/>
+  
+  <Method name="registerSet" arguments="alias, map, lang"><![CDATA[
+    var newTexts = new Texts(alias, map, lang);
+    setTexts[alias] = newTexts;
+  ]]></Method>
+  
+  <Method name="getSet" arguments="alias" trycatch="false"><![CDATA[
+    if (setTexts[alias]!=null) return setTexts[alias];
+    throw new Error("Undefined set of texts with alias '"+alias+"'"); 
+  ]]></Method>
+  
+  <Method name="modifyLang" arguments="alias, lang" trycatch="false"><![CDATA[
+    this.getSet(alias).lang = lang; 
+  ]]></Method>
+  
+  <Method name="get" arguments="key, params" trycatch="false"><![CDATA[
+    var s = key.split(".");
+    return this.getSet(s[0]).get(s[1], params); 
+  ]]></Method>
+  
+  <Method name="TEXT" arguments="alias, key, params" trycatch="false"><![CDATA[
+    return this.getSet(alias).get(key, params); 
+  ]]></Method>
+  
+  <Method name="_getObjectAndText" arguments="alias, args" trycatch="false"><![CDATA[
+    var result = { object: typeof args[0] != 'string' ? args[0] : null, text:  null, debug: null }, 
+        key = result.object==null ? args[0] : args.length>1 ? args[1] : null,
+        params = new Array(), 
+        init = result.object!=null ? 2:1;
+    for(var i=init; i<args.length; i++)
+      params.push(args[i]);
+    result.text = this.TEXT(alias, key, params);
+    result.debug = result.object && result.object.toDebug 
+                 ? result.object.toDebug()+"-> " 
+                 : result.object && result.object.program ? result.object.program.toDebug()+"-> " : ""; 
+    return result;
+  ]]></Method>
+  
+  <Method name="DEBUG" arguments="alias, args" trycatch="false"><![CDATA[
+    var val = this._getObjectAndText(alias, args);
+    if (typeof opera == "object")
+      opera.postError(val.debug+val.text);
+    else 
+      console.log(val.debug+val.text);
+    return val.text;
+  ]]></Method>
+  
+  <Method name="ERROR" arguments="alias, args" trycatch="false"><![CDATA[
+    var val = this._getObjectAndText(alias, args);
+    if (typeof opera == "object") {
+      opera.postError(val.debug+val.text);
+      if (val.object) opera.postError(val.object);
+    } else {
+      console.error(val.debug+val.text);
+      if (val.object) console.log(val.object);
+    }
+    return val.text;
+  ]]></Method>
+  
+  <Method name="WARNING" arguments="alias, args" trycatch="false"><![CDATA[
+    var val = this._getObjectAndText(alias, args);
+    if (typeof opera == "object") {
+      opera.postError(val.debug+val.text);
+      if (val.object) opera.postError(val.object);
+    } else {
+      console.warn(val.debug+val.text);
+      if (val.object) console.log(val.object);
+    }
+    return val.text;
+  ]]></Method>
+</Component>
+
+
+</ModelImplementationPsi>
